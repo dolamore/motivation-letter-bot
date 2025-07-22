@@ -22,27 +22,27 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 public class MotivationLetterBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
     private final String botToken;
     private final TelegramClient telegramClient;
+    private final MotivationLetterDataRepository motivationLetterDataRepository;
 
     @Autowired
-    private MotivationLetterDataRepository motivationLetterDataRepository;
-
-    @Autowired
-    public MotivationLetterBot(Environment env) {
+    public MotivationLetterBot(Environment env, MotivationLetterDataRepository motivationLetterDataRepository) {
         String botToken = env.getProperty("BOT_TOKEN");
         if (botToken == null || botToken.isBlank()) {
             throw new IllegalStateException("BOT_TOKEN environment variable is not set");
         }
         this.botToken = botToken;
         this.telegramClient = new OkHttpTelegramClient(botToken);
+        this.motivationLetterDataRepository = motivationLetterDataRepository;
     }
 
     // Constructor for testability
-    public MotivationLetterBot(String botToken, TelegramClient telegramClient) {
+    public MotivationLetterBot(String botToken, TelegramClient telegramClient, MotivationLetterDataRepository motivationLetterDataRepository) {
         if (botToken == null || botToken.isBlank()) {
             throw new IllegalStateException("BOT_TOKEN must not be null or blank");
         }
         this.botToken = botToken;
         this.telegramClient = telegramClient;
+        this.motivationLetterDataRepository = motivationLetterDataRepository;
     }
 
     @Override
@@ -86,8 +86,8 @@ public class MotivationLetterBot implements SpringLongPollingBot, LongPollingSin
             String responseText = buildResponseText(messageText);
 
             // Example: using messageText as roleDescription, motivation, and generatedText
-            MotivationLetterData data = buildMotivationLetterData(messageText, null, responseText);
-            motivationLetterDataRepository.save(data);
+//            MotivationLetterData data = buildMotivationLetterData(messageText, null, responseText);
+//            motivationLetterDataRepository.save(data);
 
             SendMessage message = buildSendMessage(chat_id, responseText);
             sendMessage(message);
