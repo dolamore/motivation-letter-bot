@@ -1,6 +1,7 @@
 name: CI/CD MotivationLetterBot
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - dev
