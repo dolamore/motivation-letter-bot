@@ -1,0 +1,30 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: balkouski
+      changes:
+        - createTable:
+            tableName: motivation_letters_data
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: role_description
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: motivation
+                  type: TEXT
+              - column:
+                  name: generated_text
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
