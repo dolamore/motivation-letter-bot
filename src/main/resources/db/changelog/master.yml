@@ -1,6 +1,13 @@
 databaseChangeLog:
+  - - changeSet:
+        id: 1
+        author: balkouski
+        changes:
+          - createSchema:
+              schemaName: motivation_letter_bot_schema
+
   - changeSet:
-      id: 1
+      id: 2
       author: balkouski
       changes:
         - createTable:
