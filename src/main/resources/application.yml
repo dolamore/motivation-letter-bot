@@ -2,12 +2,12 @@ spring:
   application:
     name: MotivationLetterBot
   datasource:
-    url: ${JDBC_DATABASE_URL}
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+    url: ${JDBC_DATABASE_URL:jdbc:postgresql://localhost:5432/postgres}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 10
+      maximum-pool-size: 2
   jpa:
     hibernate:
       ddl-auto: validate
