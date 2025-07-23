@@ -3,8 +3,10 @@ databaseChangeLog:
       id: 1
       author: balkouski
       changes:
-        - createSchema:
-            schemaName: motivation_letter_bot_schema
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: CREATE SCHEMA IF NOT EXISTS motivation_letter_bot_schema;
 
   - changeSet:
       id: 2
