@@ -4,6 +4,10 @@ services:
     container_name: postgres
     ports:
       - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
     volumes:
       - motivation-letter-bot_postgres_data:/var/lib/postgresql/data
       - ./imports/postgres-init.sql:/docker-entrypoint-initdb.d/postgres-init.sql
