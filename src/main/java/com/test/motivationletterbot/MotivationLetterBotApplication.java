@@ -9,5 +9,4 @@ public class MotivationLetterBotApplication {
     public static void main(String[] args) {
         SpringApplication.run(MotivationLetterBotApplication.class, args);
     }
-
 }

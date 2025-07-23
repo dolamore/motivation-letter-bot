@@ -4,6 +4,7 @@ databaseChangeLog:
       author: balkouski
       changes:
         - createTable:
+            schemaName: motivation_letter_bot_schema
             tableName: motivation_letters_data
             columns:
               - column:
