@@ -1,4 +1,21 @@
 spring:
+  aop:
+    proxy-target-class: true
+  main:
+    banner-mode: "off"
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: motivation-letter-bot
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: '*'
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
   application:
     name: MotivationLetterBot
   datasource:
@@ -18,6 +35,16 @@ spring:
     default-schema: ${POSTGRES_SCHEMA:motivation_letter_bot_schema}
     change-log: classpath:db/changelog/master.yml
 
+logging:
+  level:
+    root: WARN
+
 bot:
-  name: "MotivationLetterBot"
-  token: ${BOT_TOKEN:8068325542:AAEanbwFmZ_uLykXOgTf1D9CrLlyNQ52FfI}
+   name: "MotivationLetterBot"
+   token: ${BOT_TOKEN:8068325542:AAEanbwFmZ_uLykXOgTf1D9CrLlyNQ52FfI}
+
+
+motivation-bot:
+  kafka:
+    request-topic: motivation-bot-requests
+    response-topic: motivation-bot-responses

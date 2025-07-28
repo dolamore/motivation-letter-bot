@@ -1,10 +1,13 @@
 package com.test.motivationletterbot;
 
-import com.test.motivationletterbot.entity.MotivationLetterDataRepository;
+import com.test.motivationletterbot.entity.BotProperties;
+import com.test.motivationletterbot.kafka.MotivationLetterKafkaProducer;
+import com.test.motivationletterbot.kafka.MotivationLetterRequest;
+import org.springframework.kafka.support.SendResult;
+
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.BotSession;
@@ -17,37 +20,26 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.util.concurrent.CompletableFuture;
+
 @Slf4j
 @Component
-public class MotivationLetterBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
-    @Value("${bot.token}")
-    private String botToken;
+public class MotivationLetterBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer, TelegramMessageSender {
     private final TelegramClient telegramClient;
-    private final MotivationLetterDataRepository motivationLetterDataRepository;
+    private final BotProperties botProperties;
+    private final MotivationLetterKafkaProducer kafkaProducer;
 
-    @Autowired
-    public MotivationLetterBot(@Value("${bot.token}") String botToken, MotivationLetterDataRepository motivationLetterDataRepository) {
-        if (botToken == null || botToken.isBlank()) {
-            throw new IllegalStateException("BOT_TOKEN must not be null or blank");
-        }
-        this.botToken = botToken;
-        this.telegramClient = new OkHttpTelegramClient(botToken);
-        this.motivationLetterDataRepository = motivationLetterDataRepository;
-    }
-
-    // Constructor for testability
-    public MotivationLetterBot(String botToken, TelegramClient telegramClient, MotivationLetterDataRepository motivationLetterDataRepository) {
-        if (botToken == null || botToken.isBlank()) {
-            throw new IllegalStateException("BOT_TOKEN must not be null or blank");
-        }
-        this.botToken = botToken;
-        this.telegramClient = telegramClient;
-        this.motivationLetterDataRepository = motivationLetterDataRepository;
+    public MotivationLetterBot(
+            BotProperties botProperties,
+            MotivationLetterKafkaProducer kafkaProducer) {
+        this.botProperties = botProperties;
+        this.telegramClient = new OkHttpTelegramClient(botProperties.getToken());
+        this.kafkaProducer = kafkaProducer;
     }
 
     @Override
     public String getBotToken() {
-        return botToken;
+        return botProperties.getToken();
     }
 
     @Override
@@ -70,24 +62,37 @@ public class MotivationLetterBot implements SpringLongPollingBot, LongPollingSin
         }
     }
 
-    private String buildResponseText(String messageText) {
-        return "You said: " + messageText;
-    }
-
+    @Async
     @Override
     public void consume(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chat_id = update.getMessage().getChatId();
-            String responseText = buildResponseText(messageText);
+            SendMessage instantMessage = buildSendMessage(chat_id, "Your text is being processed. Please wait...");
+            sendMessage(instantMessage);
+            // Publish to Kafka for async processing
+            CompletableFuture<SendResult<String, MotivationLetterRequest>> future = kafkaProducer.sendRequest(
+                    new MotivationLetterRequest(chat_id, messageText)
+            );
 
-            SendMessage message = buildSendMessage(chat_id, responseText);
-            sendMessage(message);
+            future.whenComplete((result, ex) -> {
+                if (ex != null) {
+                    log.error("Failed to send Kafka request", ex);
+                    sendMessage(buildSendMessage(chat_id, "An error occurred while processing your request. Please try again later."));
+                } else {
+                    log.warn("Kafka request sent successfully: {}", result.getProducerRecord().value().getMessageText());
+                }
+            });
         }
+    }
+
+    public void sendMessageToUser(Long chatId, String text) {
+        SendMessage message = buildSendMessage(chatId, text);
+        sendMessage(message);
     }
 
     @AfterBotRegistration
     public void afterRegistration(BotSession botSession) {
-        log.info("Registered bot running state is: {}", botSession.isRunning());
+        log.warn("Registered bot '{}' (token: {}) running state is: {}", botProperties.getName(), botProperties.getToken(), botSession.isRunning());
     }
 }
