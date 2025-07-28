@@ -75,12 +75,10 @@ public class MotivationLetterBot implements SpringLongPollingBot, LongPollingSin
                     new MotivationLetterRequest(chat_id, messageText)
             );
 
-            future.whenComplete((result, ex) -> {
-                if (ex != null) {
-                    log.error("Failed to send Kafka request", ex);
+            future.whenComplete((result, e) -> {
+                if (e != null) {
+                    log.error("Failed to send Kafka request", e);
                     sendMessage(buildSendMessage(chat_id, "An error occurred while processing your request. Please try again later."));
-                } else {
-                    log.warn("Kafka request sent successfully: {}", result.getProducerRecord().value().getMessageText());
                 }
             });
         }

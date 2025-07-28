@@ -1,13 +1,12 @@
 package com.test.motivationletterbot;
 
 import com.test.motivationletterbot.entity.BotProperties;
+import com.test.motivationletterbot.kafka.MotivationLetterKafkaProducer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.ThreadPoolExecutor;
@@ -15,8 +14,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Slf4j
 @Configuration
 @EnableAsync
-@EnableAspectJAutoProxy
-@EnableScheduling
 @EnableConfigurationProperties(BotProperties.class)
 public class BotConfig {
     @Bean(name = "taskExecutor")
