@@ -1,16 +1,16 @@
 services:
-  postgres:
-    image: 'postgres:14-alpine'
-    container_name: postgres
+
+  app:
+    build: .
+    container_name: motivation-letter-bot
     ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
+      - "8080:8080"
+    depends_on:
+      - kafka
     volumes:
-      - motivation-letter-bot_postgres_data:/var/lib/postgresql/data
-      - ./imports/postgres-init.sql:/docker-entrypoint-initdb.d/postgres-init.sql
+      - .:/app
+    command: sh -c "mvn spring-boot:run"
+    restart: always
 
   zookeeper:
     image: 'confluentinc/cp-zookeeper:7.5.0'
@@ -34,6 +34,3 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_CREATE_TOPICS: "motivation-bot-requests:1:1,motivation-bot-responses:1:1"
-
-volumes:
-  motivation-letter-bot_postgres_data:
