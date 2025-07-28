@@ -1,0 +1,41 @@
+package com.test.motivationletterbot;
+
+import com.test.motivationletterbot.entity.BotProperties;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import java.util.concurrent.ThreadPoolExecutor;
+
+@Slf4j
+@Configuration
+@EnableAsync
+@EnableAspectJAutoProxy
+@EnableScheduling
+@EnableConfigurationProperties(BotProperties.class)
+public class BotConfig {
+    @Bean(name = "taskExecutor")
+    public ThreadPoolTaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(2);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("BotExecutor-");
+        executor.setRejectedExecutionHandler((r, e) -> {
+            // Custom logging for rejected tasks
+            if (r != null) {
+                log.error("[REJECTED TASK] Runnable class: {}", r.getClass().getName());
+            }
+            log.error("[REJECTED TASK] Executor state: {}", e.toString());
+            // Use CallerRunsPolicy as fallback
+            new ThreadPoolExecutor.CallerRunsPolicy().rejectedExecution(r, e);
+        });
+        executor.initialize();
+        return executor;
+    }
+}
