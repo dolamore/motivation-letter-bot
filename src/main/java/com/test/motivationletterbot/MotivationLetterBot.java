@@ -7,7 +7,6 @@ import org.springframework.kafka.support.SendResult;
 
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.BotSession;
@@ -21,6 +20,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.concurrent.CompletableFuture;
+
+import static com.test.motivationletterbot.MessageConstants.*;
 
 @Slf4j
 @Component
@@ -62,26 +63,27 @@ public class MotivationLetterBot implements SpringLongPollingBot, LongPollingSin
         }
     }
 
-    @Async
     @Override
     public void consume(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chat_id = update.getMessage().getChatId();
-            SendMessage instantMessage = buildSendMessage(chat_id, "Your text is being processed. Please wait...");
+            SendMessage instantMessage = buildSendMessage(chat_id, PROCESSING_MESSAGE);
             sendMessage(instantMessage);
-            // Publish to Kafka for async processing
-            CompletableFuture<SendResult<String, MotivationLetterRequest>> future = kafkaProducer.sendRequest(
-                    new MotivationLetterRequest(chat_id, messageText)
-            );
-
-            future.whenComplete((result, e) -> {
-                if (e != null) {
-                    log.error("Failed to send Kafka request", e);
-                    sendMessage(buildSendMessage(chat_id, "An error occurred while processing your request. Please try again later."));
-                }
-            });
+            sendToKafka(chat_id, messageText);
         }
+    }
+
+    void sendToKafka(long chatId, String messageText) {
+        CompletableFuture<SendResult<String, MotivationLetterRequest>> future = kafkaProducer.sendRequest(
+                new MotivationLetterRequest(chatId, messageText)
+        );
+        future.whenComplete((result, e) -> {
+            if (e != null) {
+                log.error("Failed to send Kafka request", e);
+                sendMessage(buildSendMessage(chatId, ERROR_MESSAGE));
+            }
+        });
     }
 
     public void sendMessageToUser(Long chatId, String text) {
