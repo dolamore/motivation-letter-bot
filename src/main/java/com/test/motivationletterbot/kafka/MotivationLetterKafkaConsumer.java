@@ -1,7 +1,7 @@
 package com.test.motivationletterbot.kafka;
 
+import com.test.motivationletterbot.MotivationLetterBot;
 import com.test.motivationletterbot.MotivationLetterService;
-import com.test.motivationletterbot.TelegramMessageSender;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -11,13 +11,13 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class MotivationLetterKafkaConsumer {
-    private final TelegramMessageSender motivationLetterBot;
+    private final MotivationLetterBot motivationLetterBot;
     private final KafkaTemplate<String, MotivationLetterResponse> responseKafkaTemplate;
     private final String responseTopic;
     private final MotivationLetterService motivationLetterService;
 
     public MotivationLetterKafkaConsumer(
-            TelegramMessageSender motivationLetterBot,
+            MotivationLetterBot motivationLetterBot,
             KafkaTemplate<String, MotivationLetterResponse> responseKafkaTemplate,
             @Value("${motivation-bot.kafka.response-topic}") String responseTopic,
             MotivationLetterService motivationLetterService) {
@@ -37,6 +37,6 @@ public class MotivationLetterKafkaConsumer {
 
     @KafkaListener(topics = "${motivation-bot.kafka.response-topic}", groupId = "motivation-letter-bot")
     public void handleResponse(MotivationLetterResponse response) {
-        motivationLetterBot.sendMessageToUser(response.getChatId(), response.getGeneratedText());
+        motivationLetterBot.sendMessage(response.getChatId(), response.getGeneratedText());
     }
 }

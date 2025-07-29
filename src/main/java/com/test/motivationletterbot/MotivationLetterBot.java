@@ -25,7 +25,7 @@ import static com.test.motivationletterbot.MessageConstants.*;
 
 @Slf4j
 @Component
-public class MotivationLetterBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer, TelegramMessageSender {
+public class MotivationLetterBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
     private final TelegramClient telegramClient;
     private final BotProperties botProperties;
     private final MotivationLetterKafkaProducer kafkaProducer;
@@ -55,7 +55,8 @@ public class MotivationLetterBot implements SpringLongPollingBot, LongPollingSin
                 .build();
     }
 
-    private void sendMessage(SendMessage message) {
+    public void sendMessage(long chatId, String messageText) {
+        SendMessage message = buildSendMessage(chatId, messageText);
         try {
             telegramClient.execute(message);
         } catch (TelegramApiException e) {
@@ -68,8 +69,7 @@ public class MotivationLetterBot implements SpringLongPollingBot, LongPollingSin
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chat_id = update.getMessage().getChatId();
-            SendMessage instantMessage = buildSendMessage(chat_id, PROCESSING_MESSAGE);
-            sendMessage(instantMessage);
+            sendMessage(chat_id, PROCESSING_MESSAGE);
             sendToKafka(chat_id, messageText);
         }
     }
@@ -81,14 +81,9 @@ public class MotivationLetterBot implements SpringLongPollingBot, LongPollingSin
         future.whenComplete((result, e) -> {
             if (e != null) {
                 log.error("Failed to send Kafka request", e);
-                sendMessage(buildSendMessage(chatId, ERROR_MESSAGE));
+                sendMessage(chatId, ERROR_MESSAGE);
             }
         });
-    }
-
-    public void sendMessageToUser(Long chatId, String text) {
-        SendMessage message = buildSendMessage(chatId, text);
-        sendMessage(message);
     }
 
     @AfterBotRegistration
