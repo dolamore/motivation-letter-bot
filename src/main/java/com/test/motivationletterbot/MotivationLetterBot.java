@@ -1,6 +1,7 @@
 package com.test.motivationletterbot;
 
 import com.test.motivationletterbot.entity.BotProperties;
+import com.test.motivationletterbot.entity.UserSession;
 import com.test.motivationletterbot.kafka.KafkaProducer;
 import com.test.motivationletterbot.kafka.KafkaRequest;
 import org.springframework.kafka.support.SendResult;
@@ -36,9 +37,7 @@ import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 public class MotivationLetterBot extends AbilityBot implements SpringLongPollingBot {
     private final BotProperties botProperties;
     private final KafkaProducer kafkaProducer;
-    private final ConcurrentHashMap<Long, StringBuilder> motivation = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Long, StringBuilder> vacancy = new ConcurrentHashMap<>();
-    private boolean messageIsComplete = false;
+    private final ConcurrentHashMap<Long, UserSession> userSessions = new ConcurrentHashMap<>();
     private final long creatorId;
 
     public MotivationLetterBot(
@@ -83,18 +82,33 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
 
     @Override
     public void consume(Update update) {
-        super.consume(update);
         var message = update.getMessage();
-        if (message != null && message.hasText()) {
-            String messageText = message.getText();
-            long chat_id = message.getChatId();
+        if (message != null) {
+            UserSession session = userSessions.computeIfAbsent(message.getChatId(), id -> new UserSession());
 
-
-            if (messageIsComplete) {
-                sendMessage(chat_id, PROCESSING_MESSAGE);
-                sendToKafka(chat_id, messageText);
+            if (session.isVacancyOnWork() && message.hasText()) {
+                session.appendVacancy(message.getText());
             }
+
+            super.consume(update);
+
+            log.warn(session.getVacancy().toString());
         }
+    }
+
+    public Ability startRoleDescriptionWriting() {
+        return Ability.builder()
+                .name("start_rd")
+                .info("Start role description writing")
+                .privacy(PUBLIC)
+                .locality(ALL)
+                .action(ctx -> {
+                    long chatId = ctx.chatId();
+                    UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
+                    session.resetVacancy();
+                    silent.send("Please provide your role description!", ctx.chatId());
+                })
+                .build();
     }
 
     void sendToKafka(long chatId, String messageText) {
