@@ -87,12 +87,13 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
             UserSession session = userSessions.computeIfAbsent(message.getChatId(), id -> new UserSession());
 
             if (session.isVacancyOnWork() && message.hasText()) {
+                log.warn("Vacancy is on work. Appending text: {}", message.getText());
                 session.appendVacancy(message.getText());
             }
 
             super.consume(update);
 
-            log.warn(session.getVacancy().toString());
+            log.warn("Current vacancy text: " + session.getVacancy().toString());
         }
     }
 
@@ -107,6 +108,21 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
                     UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
                     session.resetVacancy();
                     silent.send("Please provide your role description!", ctx.chatId());
+                })
+                .build();
+    }
+
+    public Ability endRoleDescriptionWriting() {
+        return Ability.builder()
+                .name("end_rd")
+                .info("End role description writing")
+                .privacy(PUBLIC)
+                .locality(ALL)
+                .action(ctx -> {
+                    long chatId = ctx.chatId();
+                    UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
+                    session.completeVacancy();
+                    silent.send("Your role description was successfully recorded", ctx.chatId());
                 })
                 .build();
     }
@@ -143,27 +159,5 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     @AfterBotRegistration
     public void afterRegistration(BotSession botSession) {
         log.warn("Registered bot '{}' (token: {}) running state is: {}", botProperties.getName(), botProperties.getToken(), botSession.isRunning());
-    }
-
-    public Ability sayHelloWorld() {
-        return Ability
-                .builder()
-                .name("hello")
-                .info("says hello world!")
-                .locality(ALL)
-                .privacy(PUBLIC)
-                .action(ctx -> silent.send("Hello world!", ctx.chatId()))
-                .build();
-    }
-
-    public Ability saysHelloWorldToFriend() {
-        return Ability.builder()
-                .name("sayhi")
-                .info("says hi to a friend")
-                .privacy(PUBLIC)
-                .locality(ALL)
-                .input(1)
-                .action(ctx -> silent.send("Hi " + ctx.firstArg(), ctx.chatId()))
-                .build();
     }
 }

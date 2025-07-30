@@ -22,7 +22,7 @@ public class UserSession {
     public void resetMotivation() {
         motivation.setLength(0);
         motivationIsComplete = false;
-        motivationOnWork = false;
+        motivationOnWork = true;
     }
 
     public void appendVacancy(String text) {
@@ -34,11 +34,16 @@ public class UserSession {
     public void resetVacancy() {
         vacancy.setLength(0);
         vacancyIsComplete = false;
-        vacancyOnWork = false;
+        vacancyOnWork = true;
     }
 
-    public void vacancyIsComplete() {
+    public void completeVacancy() {
+        // Remove the last 7 characters ("/end_rd") from the buffer
+        int len = vacancy.length();
+        vacancy.delete(len - 7, len);
+
         this.vacancyIsComplete = true;
+        this.vacancyOnWork = false;
     }
 
     public void vacancyOnWork() {
@@ -49,7 +54,8 @@ public class UserSession {
         this.motivationOnWork = true;
     }
 
-    public void motivationIsComplete() {
+    public void completeMotivation() {
         this.motivationIsComplete = true;
+        this.motivationOnWork = false;
     }
 }
