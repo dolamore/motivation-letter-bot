@@ -22,8 +22,9 @@ logging:
     root: WARN
 
 bot:
-   name: "MotivationLetterBot"
-   token: ${BOT_TOKEN:8068325542:AAEanbwFmZ_uLykXOgTf1D9CrLlyNQ52FfI}
+  name: "MotivationLetterBot"
+  token: ${BOT_TOKEN:8068325542:AAEanbwFmZ_uLykXOgTf1D9CrLlyNQ52FfI}
+  bot-creator-id: ${BOT_CREATOR_ID:946550660}
 
 
 motivation-bot:

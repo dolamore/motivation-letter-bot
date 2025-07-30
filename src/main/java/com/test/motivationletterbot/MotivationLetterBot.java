@@ -8,34 +8,39 @@ import org.springframework.kafka.support.SendResult;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
+import org.telegram.telegrambots.abilitybots.api.bot.AbilityBot;
 import org.telegram.telegrambots.longpolling.BotSession;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.AfterBotRegistration;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
-import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.test.motivationletterbot.MessageConstants.*;
 
 @Slf4j
 @Component
-public class MotivationLetterBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
-    private final TelegramClient telegramClient;
+public class MotivationLetterBot extends AbilityBot implements SpringLongPollingBot {
     private final BotProperties botProperties;
     private final MotivationLetterKafkaProducer kafkaProducer;
+    private final ConcurrentHashMap<Long, StringBuilder> motivation = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, StringBuilder> vacancy = new ConcurrentHashMap<>();
+    private boolean messageIsComplete = false;
+    private final long creatorId;
 
     public MotivationLetterBot(
             BotProperties botProperties,
-            MotivationLetterKafkaProducer kafkaProducer) {
+            MotivationLetterKafkaProducer kafkaProducer, TelegramClient telegramClient) {
+        super(telegramClient, botProperties.getName());
         this.botProperties = botProperties;
-        this.telegramClient = new OkHttpTelegramClient(botProperties.getToken());
         this.kafkaProducer = kafkaProducer;
+        this.creatorId = botProperties.getBotCreatorId();
     }
 
     @Override
@@ -66,12 +71,36 @@ public class MotivationLetterBot implements SpringLongPollingBot, LongPollingSin
 
     @Override
     public void consume(Update update) {
-        if (update.hasMessage() && update.getMessage().hasText()) {
-            String messageText = update.getMessage().getText();
-            long chat_id = update.getMessage().getChatId();
-            sendMessage(chat_id, PROCESSING_MESSAGE);
-            sendToKafka(chat_id, messageText);
+        var message = update.getMessage();
+        if (message != null && message.hasText()) {
+            String messageText = message.getText();
+            long chat_id = message.getChatId();
+            if (messageText.equalsIgnoreCase("/start")) {
+                motivation.put(chat_id, new StringBuilder());
+                vacancy.put(chat_id, new StringBuilder());
+                messageIsComplete = false;
+                sendMessage(chat_id, "started");
+                return;
+            }
+
+            if (messageText.equalsIgnoreCase("/stop")) {
+                motivation.remove(chat_id);
+                vacancy.remove(chat_id);
+                messageIsComplete = false;
+                sendMessage(chat_id, "stopped");
+                return;
+            }
+
+            if (messageIsComplete) {
+                sendMessage(chat_id, PROCESSING_MESSAGE);
+                sendToKafka(chat_id, messageText);
+            }
         }
+    }
+
+    @Override
+    public long creatorId() {
+        return creatorId;
     }
 
     void sendToKafka(long chatId, String messageText) {
