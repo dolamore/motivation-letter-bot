@@ -15,16 +15,21 @@ import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsume
 import org.telegram.telegrambots.longpolling.starter.AfterBotRegistration;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import jakarta.annotation.PostConstruct;
 
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.test.motivationletterbot.MessageConstants.*;
+import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
+import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
 @Slf4j
 @Component
@@ -35,16 +40,14 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     private final ConcurrentHashMap<Long, StringBuilder> vacancy = new ConcurrentHashMap<>();
     private boolean messageIsComplete = false;
     private final long creatorId;
-    private final Abilities abilities;
 
     public MotivationLetterBot(
             BotProperties botProperties,
-            KafkaProducer kafkaProducer, TelegramClient telegramClient, Abilities abilities) {
+            KafkaProducer kafkaProducer, TelegramClient telegramClient) {
         super(telegramClient, botProperties.getName());
         this.botProperties = botProperties;
         this.kafkaProducer = kafkaProducer;
         this.creatorId = botProperties.getBotCreatorId();
-        this.abilities = abilities;
     }
 
     @Override
@@ -109,8 +112,18 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     @PostConstruct
     public void init() {
         this.onRegister();
-        // logic to run before bot registration
-        log.warn("MotivationLetterBot bean constructed and dependencies injected. Running pre-registration logic.");
+        List<BotCommand> commands = getAbilities().values().stream()
+                .filter(ability -> ability.info() != null && !ability.info().isBlank())
+                .map(ability -> new BotCommand("/" + ability.name(), ability.info()))
+                .toList();
+        SetMyCommands setMyCommands = SetMyCommands.builder()
+                .commands(commands)
+                .build();
+        try {
+            telegramClient.execute(setMyCommands);
+        } catch (TelegramApiException e) {
+            log.error("Failed to set bot commands", e);
+        }
     }
 
     @AfterBotRegistration
@@ -119,10 +132,24 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     }
 
     public Ability sayHelloWorld() {
-        return abilities.sayHelloWorld(silent);
+        return Ability
+                .builder()
+                .name("hello")
+                .info("says hello world!")
+                .locality(ALL)
+                .privacy(PUBLIC)
+                .action(ctx -> silent.send("Hello world!", ctx.chatId()))
+                .build();
     }
 
     public Ability saysHelloWorldToFriend() {
-        return abilities.saysHelloWorldToFriend(silent);
+        return Ability.builder()
+                .name("sayhi")
+                .info("says hi to a friend")
+                .privacy(PUBLIC)
+                .locality(ALL)
+                .input(1)
+                .action(ctx -> silent.send("Hi " + ctx.firstArg(), ctx.chatId()))
+                .build();
     }
 }
