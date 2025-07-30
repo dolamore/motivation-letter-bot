@@ -9,6 +9,7 @@ import org.springframework.kafka.support.SendResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.bot.AbilityBot;
+import org.telegram.telegrambots.abilitybots.api.objects.Ability;
 import org.telegram.telegrambots.longpolling.BotSession;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.AfterBotRegistration;
@@ -18,7 +19,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import java.util.HashMap;
+import jakarta.annotation.PostConstruct;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,14 +35,16 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     private final ConcurrentHashMap<Long, StringBuilder> vacancy = new ConcurrentHashMap<>();
     private boolean messageIsComplete = false;
     private final long creatorId;
+    private final MotivationLetterAbilities abilities;
 
     public MotivationLetterBot(
             BotProperties botProperties,
-            MotivationLetterKafkaProducer kafkaProducer, TelegramClient telegramClient) {
+            MotivationLetterKafkaProducer kafkaProducer, TelegramClient telegramClient, MotivationLetterAbilities abilities) {
         super(telegramClient, botProperties.getName());
         this.botProperties = botProperties;
         this.kafkaProducer = kafkaProducer;
         this.creatorId = botProperties.getBotCreatorId();
+        this.abilities = abilities;
     }
 
     @Override
@@ -71,6 +75,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
 
     @Override
     public void consume(Update update) {
+        super.consume(update);
         var message = update.getMessage();
         if (message != null && message.hasText()) {
             String messageText = message.getText();
@@ -98,6 +103,14 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         }
     }
 
+    public Ability sayHelloWorld() {
+        return abilities.sayHelloWorld(silent);
+    }
+
+    public Ability saysHelloWorldToFriend() {
+        return abilities.saysHelloWorldToFriend(silent);
+    }
+
     @Override
     public long creatorId() {
         return creatorId;
@@ -118,5 +131,12 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     @AfterBotRegistration
     public void afterRegistration(BotSession botSession) {
         log.warn("Registered bot '{}' (token: {}) running state is: {}", botProperties.getName(), botProperties.getToken(), botSession.isRunning());
+    }
+
+    @PostConstruct
+    public void init() {
+        this.onRegister();
+        // logic to run before bot registration
+        log.warn("MotivationLetterBot bean constructed and dependencies injected. Running pre-registration logic.");
     }
 }
