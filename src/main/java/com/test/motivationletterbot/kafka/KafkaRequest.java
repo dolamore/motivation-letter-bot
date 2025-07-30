@@ -9,8 +9,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MotivationLetterResponse {
+public class KafkaRequest {
     private Long chatId;
-    private String generatedText;
-
+    private String messageText;
 }

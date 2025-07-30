@@ -10,15 +10,15 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class MotivationLetterKafkaConsumer {
+public class KafkaConsumer {
     private final MotivationLetterBot motivationLetterBot;
-    private final KafkaTemplate<String, MotivationLetterResponse> responseKafkaTemplate;
+    private final KafkaTemplate<String, KafkaResponse> responseKafkaTemplate;
     private final String responseTopic;
     private final MotivationLetterService motivationLetterService;
 
-    public MotivationLetterKafkaConsumer(
+    public KafkaConsumer(
             MotivationLetterBot motivationLetterBot,
-            KafkaTemplate<String, MotivationLetterResponse> responseKafkaTemplate,
+            KafkaTemplate<String, KafkaResponse> responseKafkaTemplate,
             @Value("${motivation-bot.kafka.response-topic}") String responseTopic,
             MotivationLetterService motivationLetterService) {
         this.motivationLetterBot = motivationLetterBot;
@@ -28,15 +28,15 @@ public class MotivationLetterKafkaConsumer {
     }
 
     @KafkaListener(topics = "${motivation-bot.kafka.request-topic}", groupId = "motivation-letter-bot")
-    public void handleRequest(MotivationLetterRequest request) {
+    public void handleRequest(KafkaRequest request) {
         String generatedText = motivationLetterService.buildResponseText(request.getMessageText());
         log.warn("Generated text for chat ID {}: {}", request.getChatId(), generatedText);
-        MotivationLetterResponse response = new MotivationLetterResponse(request.getChatId(), generatedText);
+        KafkaResponse response = new KafkaResponse(request.getChatId(), generatedText);
         responseKafkaTemplate.send(responseTopic, response);
     }
 
     @KafkaListener(topics = "${motivation-bot.kafka.response-topic}", groupId = "motivation-letter-bot")
-    public void handleResponse(MotivationLetterResponse response) {
+    public void handleResponse(KafkaResponse response) {
         motivationLetterBot.sendMessage(response.getChatId(), response.getGeneratedText());
     }
 }
