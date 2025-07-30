@@ -57,6 +57,11 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         return this;
     }
 
+    @Override
+    public long creatorId() {
+        return creatorId;
+    }
+
     private SendMessage buildSendMessage(long chatId, String text) {
         return SendMessage.builder()
                 .chatId(chatId)
@@ -80,40 +85,13 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         if (message != null && message.hasText()) {
             String messageText = message.getText();
             long chat_id = message.getChatId();
-            if (messageText.equalsIgnoreCase("/start")) {
-                motivation.put(chat_id, new StringBuilder());
-                vacancy.put(chat_id, new StringBuilder());
-                messageIsComplete = false;
-                sendMessage(chat_id, "started");
-                return;
-            }
 
-            if (messageText.equalsIgnoreCase("/stop")) {
-                motivation.remove(chat_id);
-                vacancy.remove(chat_id);
-                messageIsComplete = false;
-                sendMessage(chat_id, "stopped");
-                return;
-            }
 
             if (messageIsComplete) {
                 sendMessage(chat_id, PROCESSING_MESSAGE);
                 sendToKafka(chat_id, messageText);
             }
         }
-    }
-
-    public Ability sayHelloWorld() {
-        return abilities.sayHelloWorld(silent);
-    }
-
-    public Ability saysHelloWorldToFriend() {
-        return abilities.saysHelloWorldToFriend(silent);
-    }
-
-    @Override
-    public long creatorId() {
-        return creatorId;
     }
 
     void sendToKafka(long chatId, String messageText) {
@@ -128,15 +106,23 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         });
     }
 
-    @AfterBotRegistration
-    public void afterRegistration(BotSession botSession) {
-        log.warn("Registered bot '{}' (token: {}) running state is: {}", botProperties.getName(), botProperties.getToken(), botSession.isRunning());
-    }
-
     @PostConstruct
     public void init() {
         this.onRegister();
         // logic to run before bot registration
         log.warn("MotivationLetterBot bean constructed and dependencies injected. Running pre-registration logic.");
+    }
+
+    @AfterBotRegistration
+    public void afterRegistration(BotSession botSession) {
+        log.warn("Registered bot '{}' (token: {}) running state is: {}", botProperties.getName(), botProperties.getToken(), botSession.isRunning());
+    }
+
+    public Ability sayHelloWorld() {
+        return abilities.sayHelloWorld(silent);
+    }
+
+    public Ability saysHelloWorldToFriend() {
+        return abilities.saysHelloWorldToFriend(silent);
     }
 }
