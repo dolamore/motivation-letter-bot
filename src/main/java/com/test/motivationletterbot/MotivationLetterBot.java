@@ -1,8 +1,8 @@
 package com.test.motivationletterbot;
 
 import com.test.motivationletterbot.entity.BotProperties;
-import com.test.motivationletterbot.kafka.MotivationLetterKafkaProducer;
-import com.test.motivationletterbot.kafka.MotivationLetterRequest;
+import com.test.motivationletterbot.kafka.KafkaProducer;
+import com.test.motivationletterbot.kafka.KafkaRequest;
 import org.springframework.kafka.support.SendResult;
 
 
@@ -30,16 +30,16 @@ import static com.test.motivationletterbot.MessageConstants.*;
 @Component
 public class MotivationLetterBot extends AbilityBot implements SpringLongPollingBot {
     private final BotProperties botProperties;
-    private final MotivationLetterKafkaProducer kafkaProducer;
+    private final KafkaProducer kafkaProducer;
     private final ConcurrentHashMap<Long, StringBuilder> motivation = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, StringBuilder> vacancy = new ConcurrentHashMap<>();
     private boolean messageIsComplete = false;
     private final long creatorId;
-    private final MotivationLetterAbilities abilities;
+    private final Abilities abilities;
 
     public MotivationLetterBot(
             BotProperties botProperties,
-            MotivationLetterKafkaProducer kafkaProducer, TelegramClient telegramClient, MotivationLetterAbilities abilities) {
+            KafkaProducer kafkaProducer, TelegramClient telegramClient, Abilities abilities) {
         super(telegramClient, botProperties.getName());
         this.botProperties = botProperties;
         this.kafkaProducer = kafkaProducer;
@@ -95,8 +95,8 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     }
 
     void sendToKafka(long chatId, String messageText) {
-        CompletableFuture<SendResult<String, MotivationLetterRequest>> future = kafkaProducer.sendRequest(
-                new MotivationLetterRequest(chatId, messageText)
+        CompletableFuture<SendResult<String, KafkaRequest>> future = kafkaProducer.sendRequest(
+                new KafkaRequest(chatId, messageText)
         );
         future.whenComplete((result, e) -> {
             if (e != null) {

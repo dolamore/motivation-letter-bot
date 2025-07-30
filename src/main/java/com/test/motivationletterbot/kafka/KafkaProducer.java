@@ -8,19 +8,19 @@ import org.springframework.kafka.support.SendResult;
 import java.util.concurrent.CompletableFuture;
 
 @Service
-public class MotivationLetterKafkaProducer {
-    private final KafkaTemplate<String, MotivationLetterRequest> kafkaTemplate;
+public class KafkaProducer {
+    private final KafkaTemplate<String, KafkaRequest> kafkaTemplate;
     private final String requestTopic;
 
-    public MotivationLetterKafkaProducer(
-            KafkaTemplate<String, MotivationLetterRequest> kafkaTemplate,
+    public KafkaProducer(
+            KafkaTemplate<String, KafkaRequest> kafkaTemplate,
             @Value("${motivation-bot.kafka.request-topic}") String requestTopic
     ) {
         this.kafkaTemplate = kafkaTemplate;
         this.requestTopic = requestTopic;
     }
 
-    public CompletableFuture<SendResult<String, MotivationLetterRequest>> sendRequest(MotivationLetterRequest request) {
+    public CompletableFuture<SendResult<String, KafkaRequest>> sendRequest(KafkaRequest request) {
         return kafkaTemplate.send(requestTopic, request).toCompletableFuture();
     }
 }

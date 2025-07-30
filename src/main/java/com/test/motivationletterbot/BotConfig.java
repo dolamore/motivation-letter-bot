@@ -1,7 +1,6 @@
 package com.test.motivationletterbot;
 
 import com.test.motivationletterbot.entity.BotProperties;
-import com.test.motivationletterbot.kafka.MotivationLetterKafkaProducer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

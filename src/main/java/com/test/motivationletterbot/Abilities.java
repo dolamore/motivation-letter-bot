@@ -8,7 +8,7 @@ import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
 @Component
-public class MotivationLetterAbilities {
+public class Abilities {
     public Ability sayHelloWorld(SilentSender silent) {
         return Ability
                 .builder()
