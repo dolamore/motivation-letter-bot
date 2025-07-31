@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
+import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
+
 @Service
 public class BotAbilityCommandService {
     private final ConcurrentHashMap<Long, UserSession> userSessions;
@@ -28,8 +31,8 @@ public class BotAbilityCommandService {
         return Ability.builder()
                 .name(commandEnum.name().toLowerCase())
                 .info(commandEnum.getBotCommand().getDescription())
-                .privacy(org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC)
-                .locality(org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL)
+                .privacy(PUBLIC)
+                .locality(ALL)
                 .action(ctx -> {
                     long chatId = ctx.chatId();
                     UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
