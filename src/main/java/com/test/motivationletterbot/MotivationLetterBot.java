@@ -91,40 +91,67 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
                 session.appendVacancy(message.getText());
             }
 
+            if (session.isMotivationOnWork() && message.hasText()) {
+                log.warn("Motivation is on work. Appending text: {}", message.getText());
+                session.appendMotivation(message.getText());
+            }
+
             super.consume(update);
 
-            log.warn("Current vacancy text: " + session.getVacancy().toString());
+            log.warn("Current vacancy text: {}", session.getVacancy());
+            log.warn("Current motivation text: {}", session.getMotivation());
         }
     }
 
-    public Ability startRoleDescriptionWriting() {
+    private Ability buildAbility(String name, String info, java.util.function.Consumer<UserSession> sessionAction, String message) {
         return Ability.builder()
-                .name("start_rd")
-                .info("Start role description writing")
+                .name(name)
+                .info(info)
                 .privacy(PUBLIC)
                 .locality(ALL)
                 .action(ctx -> {
                     long chatId = ctx.chatId();
                     UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
-                    session.resetVacancy();
-                    silent.send("Please provide your role description!", ctx.chatId());
+                    sessionAction.accept(session);
+                    silent.send(message, chatId);
                 })
                 .build();
     }
 
+    public Ability startMotivationWriting() {
+        return buildAbility(
+                "start_m",
+                "Start motivation writing",
+                UserSession::resetMotivation,
+                "Please provide your motivation text!"
+        );
+    }
+
+    public Ability endMotivationWriting() {
+        return buildAbility(
+                "end_m",
+                "End motivation writing",
+                UserSession::completeMotivation,
+                "Your motivation text was successfully recorded"
+        );
+    }
+
+    public Ability startRoleDescriptionWriting() {
+        return buildAbility(
+                "start_rd",
+                "Start role description writing",
+                UserSession::resetVacancy,
+                "Please provide your role description!"
+        );
+    }
+
     public Ability endRoleDescriptionWriting() {
-        return Ability.builder()
-                .name("end_rd")
-                .info("End role description writing")
-                .privacy(PUBLIC)
-                .locality(ALL)
-                .action(ctx -> {
-                    long chatId = ctx.chatId();
-                    UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
-                    session.completeVacancy();
-                    silent.send("Your role description was successfully recorded", ctx.chatId());
-                })
-                .build();
+        return buildAbility(
+                "end_rd",
+                "End role description writing",
+                UserSession::completeVacancy,
+                "Your role description was successfully recorded"
+        );
     }
 
     void sendToKafka(long chatId, String messageText) {
