@@ -7,10 +7,12 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -45,10 +47,10 @@ public class AbilityService {
                     SendMessage sendMessage = SendMessage.builder()
                             .chatId(chatId)
                             .text(commandEnum.getMessage())
-                            .replyMarkup(InlineKeyboardMarkup
-                                    .builder().keyboardRow(
-                                            commandEnum.getInlineKeyboardSupplier().apply(inlineKeyboards))
-                                    .build())
+                            .replyMarkup(InlineKeyboardMarkup.builder()
+                                    .keyboard(commandEnum.getInlineKeyboardSupplier().apply(inlineKeyboards))
+                                    .build()
+                            )
                             .build();
                     try {
                         telegramClient.execute(sendMessage);
@@ -80,4 +82,3 @@ public class AbilityService {
         }
     }
 }
-
