@@ -8,6 +8,7 @@ import lombok.Setter;
 public class UserSession {
     private final StringBuffer motivation = new StringBuffer();
     private final StringBuffer vacancy = new StringBuffer();
+    private boolean messageOnWork = false;
     private boolean vacancyOnWork = false;
     private boolean motivationOnWork = false;
     private boolean motivationIsComplete = false;
