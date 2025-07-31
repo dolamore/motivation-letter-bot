@@ -1,5 +1,6 @@
 package com.test.motivationletterbot;
 
+import com.test.motivationletterbot.entity.Abilities;
 import com.test.motivationletterbot.entity.BotProperties;
 import com.test.motivationletterbot.entity.UserSession;
 import com.test.motivationletterbot.kafka.KafkaProducer;
@@ -38,6 +39,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     private final BotProperties botProperties;
     private final KafkaProducer kafkaProducer;
     private final ConcurrentHashMap<Long, UserSession> userSessions = new ConcurrentHashMap<>();
+    private final Abilities abilities = new Abilities(userSessions, silent);
     private final long creatorId;
 
     public MotivationLetterBot(
@@ -103,55 +105,21 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         }
     }
 
-    private Ability buildAbility(String name, String info, java.util.function.Consumer<UserSession> sessionAction, String message) {
-        return Ability.builder()
-                .name(name)
-                .info(info)
-                .privacy(PUBLIC)
-                .locality(ALL)
-                .action(ctx -> {
-                    long chatId = ctx.chatId();
-                    UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
-                    sessionAction.accept(session);
-                    silent.send(message, chatId);
-                })
-                .build();
-    }
 
     public Ability startMotivationWriting() {
-        return buildAbility(
-                "start_m",
-                "Start motivation writing",
-                UserSession::resetMotivation,
-                "Please provide your motivation text!"
-        );
+        return abilities.startMotivationWriting();
     }
 
     public Ability endMotivationWriting() {
-        return buildAbility(
-                "end_m",
-                "End motivation writing",
-                UserSession::completeMotivation,
-                "Your motivation text was successfully recorded"
-        );
+        return abilities.endMotivationWriting();
     }
 
     public Ability startRoleDescriptionWriting() {
-        return buildAbility(
-                "start_rd",
-                "Start role description writing",
-                UserSession::resetVacancy,
-                "Please provide your role description!"
-        );
+        return abilities.startRoleDescriptionWriting();
     }
 
     public Ability endRoleDescriptionWriting() {
-        return buildAbility(
-                "end_rd",
-                "End role description writing",
-                UserSession::completeVacancy,
-                "Your role description was successfully recorded"
-        );
+        return abilities.endRoleDescriptionWriting();
     }
 
     void sendToKafka(long chatId, String messageText) {
