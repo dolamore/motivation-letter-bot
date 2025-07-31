@@ -13,11 +13,22 @@ public class UserSession {
     private boolean motivationOnWork = false;
     private boolean motivationIsComplete = false;
     private boolean vacancyIsComplete = false;
+    private boolean sessionStarted = false;
 
     public void appendMotivation(String text) {
         if (text != null && !text.isEmpty()) {
             motivation.append(text);
         }
+    }
+
+    public void startSession() {
+        sessionStarted = true;
+    }
+
+    public void endSession() {
+        sessionStarted = false;
+        resetMotivation();
+        resetVacancy();
     }
 
     public void resetMotivation() {

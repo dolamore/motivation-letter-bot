@@ -3,11 +3,17 @@ package com.test.motivationletterbot.entity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
 
+import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import static com.test.motivationletterbot.MessageConstants.*;
 
 @Getter
 @AllArgsConstructor
@@ -16,9 +22,8 @@ public enum BotCommandEnum {
             new BotCommand("start", "Start the bot"),
             "start",
             "Start motivation message creation",
-            session -> {
-            },
-            "Welcome! Use /help to see available commands.",
+            UserSession::startSession,
+            STARTING_MESSAGE,
             InlineKeyboards::startKeyboard
     ),
     START_MOTIVATION(
@@ -60,5 +65,5 @@ public enum BotCommandEnum {
     private final String info;
     private final Consumer<UserSession> sessionAction;
     private final String message;
-    private final Function<InlineKeyboards, InlineKeyboardRow> inlineKeyboardSupplier;
+    private final Function<InlineKeyboards, List<InlineKeyboardRow>> inlineKeyboardSupplier;
 }
