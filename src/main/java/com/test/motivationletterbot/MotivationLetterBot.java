@@ -1,7 +1,7 @@
 package com.test.motivationletterbot;
 
+import com.test.motivationletterbot.entity.BotAbilityCommandService;
 import com.test.motivationletterbot.entity.BotProperties;
-import com.test.motivationletterbot.entity.UserSession;
 import com.test.motivationletterbot.kafka.KafkaProducer;
 import com.test.motivationletterbot.kafka.KafkaRequest;
 import org.springframework.kafka.support.SendResult;
@@ -23,7 +23,6 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import jakarta.annotation.PostConstruct;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static com.test.motivationletterbot.MessageConstants.*;
 import static com.test.motivationletterbot.entity.BotAbilityCommandEnum.*;
@@ -33,16 +32,19 @@ import static com.test.motivationletterbot.entity.BotAbilityCommandEnum.*;
 public class MotivationLetterBot extends AbilityBot implements SpringLongPollingBot {
     private final BotProperties botProperties;
     private final KafkaProducer kafkaProducer;
-    private final ConcurrentHashMap<Long, UserSession> userSessions = new ConcurrentHashMap<>();
+    private final BotAbilityCommandService botAbilityCommandService;
     private final long creatorId;
 
     public MotivationLetterBot(
             BotProperties botProperties,
-            KafkaProducer kafkaProducer, TelegramClient telegramClient) {
+            KafkaProducer kafkaProducer,
+            TelegramClient telegramClient,
+            BotAbilityCommandService botAbilityCommandService) {
         super(telegramClient, botProperties.getName());
         this.botProperties = botProperties;
         this.kafkaProducer = kafkaProducer;
         this.creatorId = botProperties.getBotCreatorId();
+        this.botAbilityCommandService = botAbilityCommandService;
     }
 
     @Override
@@ -80,43 +82,32 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     public void consume(Update update) {
         var message = update.getMessage();
         if (message != null) {
-            UserSession session = userSessions.computeIfAbsent(message.getChatId(), id -> new UserSession());
-
-            if (session.isVacancyOnWork() && message.hasText()) {
-                log.warn("Vacancy is on work. Appending text: {}", message.getText());
-                session.appendVacancy(message.getText());
-            }
-
-            if (session.isMotivationOnWork() && message.hasText()) {
-                log.warn("Motivation is on work. Appending text: {}", message.getText());
-                session.appendMotivation(message.getText());
-            }
 
             super.consume(update);
 
-            log.warn("Current vacancy text: {}", session.getVacancy());
-            log.warn("Current motivation text: {}", session.getMotivation());
+            log.warn("Current vacancy text: {}", message.getText());
+            log.warn("Current motivation text: {}", message.getText());
         }
     }
 
     public Ability startMessageWriting() {
-        return null;
+        return botAbilityCommandService.getAbility(START);
     }
 
     public Ability startMotivationWriting() {
-        return abilities.startMotivationWriting();
+        return botAbilityCommandService.getAbility(START_MOTIVATION);
     }
 
     public Ability endMotivationWriting() {
-        return abilities.endMotivationWriting();
+        return botAbilityCommandService.getAbility(END_MOTIVATION);
     }
 
     public Ability startRoleDescriptionWriting() {
-        return abilities.startRoleDescriptionWriting();
+        return botAbilityCommandService.getAbility(START_ROLE_DESCRIPTION);
     }
 
     public Ability endRoleDescriptionWriting() {
-        return abilities.endRoleDescriptionWriting();
+        return botAbilityCommandService.getAbility(END_ROLE_DESCRIPTION);
     }
 
     void sendToKafka(long chatId, String messageText) {
@@ -134,8 +125,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     @PostConstruct
     public void init() {
         this.onRegister();
-        initCommands(userSessions, silent);
-        setBotCommands(telegramClient, START);
+        botAbilityCommandService.setBotCommands(START);
     }
 
     @AfterBotRegistration
