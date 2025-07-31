@@ -1,6 +1,6 @@
 package com.test.motivationletterbot;
 
-import com.test.motivationletterbot.entity.BotAbilityCommandService;
+import com.test.motivationletterbot.entity.AbilityService;
 import com.test.motivationletterbot.entity.BotProperties;
 import com.test.motivationletterbot.kafka.KafkaProducer;
 import com.test.motivationletterbot.kafka.KafkaRequest;
@@ -26,27 +26,27 @@ import jakarta.annotation.PostConstruct;
 import java.util.concurrent.CompletableFuture;
 
 import static com.test.motivationletterbot.MessageConstants.*;
-import static com.test.motivationletterbot.entity.BotAbilityCommandEnum.*;
+import static com.test.motivationletterbot.entity.BotCommandEnum.*;
 
 @Slf4j
 @Component
 public class MotivationLetterBot extends AbilityBot implements SpringLongPollingBot {
     private final BotProperties botProperties;
     private final KafkaProducer kafkaProducer;
-    private final BotAbilityCommandService botAbilityCommandService;
+    private final AbilityService abilityService;
     private final long creatorId;
 
     public MotivationLetterBot(
             BotProperties botProperties,
             KafkaProducer kafkaProducer,
             TelegramClient telegramClient,
-            BotAbilityCommandService botAbilityCommandService,
+            AbilityService abilityService,
             BareboneToggle toggle) {
         super(telegramClient, botProperties.getName(), toggle);
         this.botProperties = botProperties;
         this.kafkaProducer = kafkaProducer;
         this.creatorId = botProperties.getBotCreatorId();
-        this.botAbilityCommandService = botAbilityCommandService;
+        this.abilityService = abilityService;
     }
 
     @Override
@@ -93,23 +93,23 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     }
 
     public Ability startMessageWriting() {
-        return botAbilityCommandService.getAbility(START);
+        return abilityService.getAbility(START);
     }
 
     public Ability startMotivationWriting() {
-        return botAbilityCommandService.getAbility(START_MOTIVATION);
+        return abilityService.getAbility(START_MOTIVATION);
     }
 
     public Ability endMotivationWriting() {
-        return botAbilityCommandService.getAbility(END_MOTIVATION);
+        return abilityService.getAbility(END_MOTIVATION);
     }
 
     public Ability startRoleDescriptionWriting() {
-        return botAbilityCommandService.getAbility(START_ROLE_DESCRIPTION);
+        return abilityService.getAbility(START_ROLE_DESCRIPTION);
     }
 
     public Ability endRoleDescriptionWriting() {
-        return botAbilityCommandService.getAbility(END_ROLE_DESCRIPTION);
+        return abilityService.getAbility(END_ROLE_DESCRIPTION);
     }
 
     void sendToKafka(long chatId, String messageText) {
@@ -127,7 +127,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     @PostConstruct
     public void init() {
         this.onRegister();
-        botAbilityCommandService.setBotCommands(START);
+        abilityService.setBotCommands(START);
     }
 
     @AfterBotRegistration
