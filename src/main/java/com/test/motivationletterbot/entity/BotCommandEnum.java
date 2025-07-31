@@ -3,47 +3,55 @@ package com.test.motivationletterbot.entity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
+
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 @Getter
 @AllArgsConstructor
-public enum BotAbilityCommandEnum {
+public enum BotCommandEnum {
     START(
             new BotCommand("start", "Start the bot"),
             "start",
             "Start motivation message creation",
             session -> {
             },
-            "Welcome! Use /help to see available commands."
+            "Welcome! Use /help to see available commands.",
+            InlineKeyboards::startKeyboard
     ),
     START_MOTIVATION(
             new BotCommand("start_m", "Start motivation writing"),
             "start_m",
             "Start motivation writing",
             UserSession::resetMotivation,
-            "Please provide your motivation text!"
+            "Please provide your motivation text!",
+            null
     ),
     END_MOTIVATION(
             new BotCommand("end_m", "End motivation writing"),
             "end_m",
             "End motivation writing",
             UserSession::completeMotivation,
-            "Your motivation text was successfully recorded"
+            "Your motivation text was successfully recorded",
+            null
     ),
     START_ROLE_DESCRIPTION(
             new BotCommand("start_rd", "Start role description writing"),
             "start_rd",
             "Start role description writing",
             UserSession::resetVacancy,
-            "Please provide your role description!"
+            "Please provide your role description!",
+            null
     ),
     END_ROLE_DESCRIPTION(
             new BotCommand("end_rd", "End role description writing"),
             "end_rd",
             "End role description writing",
             UserSession::completeVacancy,
-            "Your role description was successfully recorded"
+            "Your role description was successfully recorded",
+            null
     );
 
 
@@ -52,4 +60,5 @@ public enum BotAbilityCommandEnum {
     private final String info;
     private final Consumer<UserSession> sessionAction;
     private final String message;
+    private final Function<InlineKeyboards, InlineKeyboardRow> inlineKeyboardSupplier;
 }

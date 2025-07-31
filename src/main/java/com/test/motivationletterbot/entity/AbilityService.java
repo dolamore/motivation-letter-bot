@@ -3,8 +3,10 @@ package com.test.motivationletterbot.entity;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
 import org.telegram.telegrambots.abilitybots.api.sender.SilentSender;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
@@ -16,18 +18,20 @@ import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
 @Service
-public class BotAbilityCommandService {
+public class AbilityService {
     private final ConcurrentHashMap<Long, UserSession> userSessions;
     private final SilentSender silent;
     private final TelegramClient telegramClient;
+    private final InlineKeyboards inlineKeyboards;
 
-    public BotAbilityCommandService(ConcurrentHashMap<Long, UserSession> userSessions, SilentSender silent, TelegramClient telegramClient) {
+    public AbilityService(ConcurrentHashMap<Long, UserSession> userSessions, SilentSender silent, TelegramClient telegramClient, InlineKeyboards inlineKeyboards) {
         this.userSessions = userSessions;
         this.silent = silent;
         this.telegramClient = telegramClient;
+        this.inlineKeyboards = inlineKeyboards;
     }
 
-    public Ability getAbility(BotAbilityCommandEnum commandEnum) {
+    public Ability getAbility(BotCommandEnum commandEnum) {
         return Ability.builder()
                 .name(commandEnum.name().toLowerCase())
                 .info(commandEnum.getBotCommand().getDescription())
@@ -37,14 +41,28 @@ public class BotAbilityCommandService {
                     long chatId = ctx.chatId();
                     UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
                     commandEnum.getSessionAction().accept(session);
-                    silent.send(commandEnum.getMessage(), chatId);
+
+                    SendMessage sendMessage = SendMessage.builder()
+                            .chatId(chatId)
+                            .text(commandEnum.getMessage())
+                            .replyMarkup(InlineKeyboardMarkup
+                                    .builder().keyboardRow(
+                                            commandEnum.getInlineKeyboardSupplier().apply(inlineKeyboards))
+                                    .build())
+                            .build();
+                    try {
+                        telegramClient.execute(sendMessage);
+                    } catch (Exception e) {
+                        // fallback to silent if sending fails
+                        silent.send(commandEnum.getMessage(), chatId);
+                    }
                 })
                 .build();
     }
 
-    private SetMyCommands getCommandsSet(BotAbilityCommandEnum... enums) {
+    private SetMyCommands getCommandsSet(BotCommandEnum... enums) {
         List<BotCommand> commands = new ArrayList<>();
-        for (BotAbilityCommandEnum e : enums) {
+        for (BotCommandEnum e : enums) {
             commands.add(e.getBotCommand());
         }
 
@@ -53,7 +71,7 @@ public class BotAbilityCommandService {
                 .build();
     }
 
-    public void setBotCommands(BotAbilityCommandEnum... enums) {
+    public void setBotCommands(BotCommandEnum... enums) {
         SetMyCommands setMyCommands = getCommandsSet(enums);
         try {
             telegramClient.execute(setMyCommands);
