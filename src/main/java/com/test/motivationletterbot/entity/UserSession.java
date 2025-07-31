@@ -55,6 +55,10 @@ public class UserSession {
     }
 
     public void completeMotivation() {
+        // Remove the last 6 characters ("/end_m") from the buffer
+        int len = motivation.length();
+        motivation.delete(len - 6, len);
+
         this.motivationIsComplete = true;
         this.motivationOnWork = false;
     }
