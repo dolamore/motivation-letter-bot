@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.bot.AbilityBot;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
+import org.telegram.telegrambots.abilitybots.api.toggle.BareboneToggle;
 import org.telegram.telegrambots.longpolling.BotSession;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.AfterBotRegistration;
@@ -39,8 +40,9 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
             BotProperties botProperties,
             KafkaProducer kafkaProducer,
             TelegramClient telegramClient,
-            BotAbilityCommandService botAbilityCommandService) {
-        super(telegramClient, botProperties.getName());
+            BotAbilityCommandService botAbilityCommandService,
+            BareboneToggle toggle) {
+        super(telegramClient, botProperties.getName(), toggle);
         this.botProperties = botProperties;
         this.kafkaProducer = kafkaProducer;
         this.creatorId = botProperties.getBotCreatorId();
