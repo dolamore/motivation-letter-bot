@@ -4,6 +4,7 @@ import com.test.motivationletterbot.MotivationLetterBot;
 import com.test.motivationletterbot.MotivationLetterService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ public class KafkaConsumer {
     private final MotivationLetterService motivationLetterService;
 
     public KafkaConsumer(
-            MotivationLetterBot motivationLetterBot,
+            @Lazy MotivationLetterBot motivationLetterBot,
             KafkaTemplate<String, KafkaResponse> responseKafkaTemplate,
             @Value("${motivation-bot.kafka.response-topic}") String responseTopic,
             MotivationLetterService motivationLetterService) {

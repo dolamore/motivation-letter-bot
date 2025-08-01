@@ -3,7 +3,7 @@ spring:
     banner-mode: "off"
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: kafka:9092
     consumer:
       group-id: motivation-letter-bot
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -19,13 +19,16 @@ spring:
 
 logging:
   level:
+    org.telegram.telegrambots: ERROR
+    org.telegram.telegrambots.longpolling.BotSession: OFF
     root: WARN
+  pattern:
+    console: "%msg%n"
 
 bot:
   name: "MotivationLetterBot"
   token: ${BOT_TOKEN:8068325542:AAEanbwFmZ_uLykXOgTf1D9CrLlyNQ52FfI}
   bot-creator-id: ${BOT_CREATOR_ID:946550660}
-
 
 motivation-bot:
   kafka:

@@ -11,6 +11,9 @@ services:
       - .:/app
     command: sh -c "mvn spring-boot:run"
     restart: always
+    environment:
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      USE_INMEMORY_MAPDB: "true"
 
   zookeeper:
     image: 'confluentinc/cp-zookeeper:7.5.0'
@@ -29,8 +32,10 @@ services:
     ports:
       - "9092:9092"
     environment:
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=WARN,kafka.coordinator.group=WARN,state.change.logger=WARN,kafka.cluster.Partition=WARN,kafka.log.LogManager=WARN,kafka.log.UnifiedLog$=WARN,kafka.server.ReplicaFetcherManager=WARN,kafka.zk.AdminZkClient=WARN"
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_CREATE_TOPICS: "motivation-bot-requests:1:1,motivation-bot-responses:1:1"
