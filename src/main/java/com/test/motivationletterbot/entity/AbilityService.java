@@ -91,12 +91,12 @@ public class AbilityService {
     public void removeInlineKeyboard(Update update) {
         if (update.hasCallbackQuery()) {
             long chatId = update.getCallbackQuery().getMessage().getChatId();
-            int messageId = (int) update.getCallbackQuery().getMessage().getMessageId();
+            int messageId = update.getCallbackQuery().getMessage().getMessageId();
 
             EditMessageReplyMarkup editMarkup = EditMessageReplyMarkup.builder()
                     .chatId(chatId)
                     .messageId(messageId)
-                    .replyMarkup(null) // removes the inline keyboard
+                    .replyMarkup(null)
                     .build();
 
             try {

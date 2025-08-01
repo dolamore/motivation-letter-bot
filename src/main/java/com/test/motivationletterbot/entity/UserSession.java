@@ -8,12 +8,16 @@ import lombok.Setter;
 public class UserSession {
     private final StringBuffer motivation = new StringBuffer();
     private final StringBuffer vacancy = new StringBuffer();
+
+    private int lastKeyboardMessageId;
+
     private boolean messageOnWork = false;
     private boolean vacancyOnWork = false;
     private boolean motivationOnWork = false;
     private boolean motivationIsComplete = false;
     private boolean vacancyIsComplete = false;
     private boolean sessionStarted = false;
+
 
     public void appendMotivation(String text) {
         if (text != null && !text.isEmpty()) {
