@@ -109,7 +109,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
             String call_data = update.getCallbackQuery().getData();
 
             if (call_data.equals("MOTIVATION")) {
-                abilityService.removeInlineKeyboard(update);
+
             }
         }
 
