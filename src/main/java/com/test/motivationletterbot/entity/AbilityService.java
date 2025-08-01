@@ -1,9 +1,12 @@
 package com.test.motivationletterbot.entity;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
 import org.telegram.telegrambots.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
+import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -17,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
+@Slf4j
 @Service
 public class AbilityService {
     private final ConcurrentHashMap<Long, UserSession> userSessions;
@@ -81,6 +85,25 @@ public class AbilityService {
             telegramClient.execute(setMyCommands);
         } catch (TelegramApiException e) {
             throw new RuntimeException("Failed to set bot commands", e);
+        }
+    }
+
+    public void removeInlineKeyboard(Update update) {
+        if (update.hasCallbackQuery()) {
+            long chatId = update.getCallbackQuery().getMessage().getChatId();
+            int messageId = (int) update.getCallbackQuery().getMessage().getMessageId();
+
+            EditMessageReplyMarkup editMarkup = EditMessageReplyMarkup.builder()
+                    .chatId(chatId)
+                    .messageId(messageId)
+                    .replyMarkup(null) // removes the inline keyboard
+                    .build();
+
+            try {
+                telegramClient.execute(editMarkup);
+            } catch (TelegramApiException e) {
+                log.error("Failed to remove inline keyboard", e);
+            }
         }
     }
 }
