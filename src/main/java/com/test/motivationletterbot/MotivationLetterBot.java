@@ -17,17 +17,20 @@ import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsume
 import org.telegram.telegrambots.longpolling.starter.AfterBotRegistration;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import jakarta.annotation.PostConstruct;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.test.motivationletterbot.MessageConstants.*;
 import static com.test.motivationletterbot.entity.BotCommandEnum.*;
+import static java.lang.Math.toIntExact;
 
 import org.telegram.telegrambots.abilitybots.api.db.DBContext;
 import org.telegram.telegrambots.abilitybots.api.db.MapDBContext;
@@ -102,14 +105,20 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
 
     @Override
     public void consume(Update update) {
-        var message = update.getMessage();
-        if (message != null) {
+        super.consume(update);
 
-            super.consume(update);
+        if (update.hasCallbackQuery()) {
+            String call_data = update.getCallbackQuery().getData();
 
-            log.warn("Current vacancy text: {}", message.getText());
-            log.warn("Current motivation text: {}", message.getText());
+            if (call_data.equals("MOTIVATION")) {
+                abilityService.removeInlineKeyboard(update);
+            }
         }
+
+        Optional.ofNullable(update.getMessage()).ifPresent(message -> {
+
+        });
+
     }
 
     public Ability startMessageWriting() {
