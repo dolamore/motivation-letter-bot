@@ -23,10 +23,14 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import jakarta.annotation.PostConstruct;
 
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.test.motivationletterbot.MessageConstants.*;
 import static com.test.motivationletterbot.entity.BotCommandEnum.*;
+
+import org.telegram.telegrambots.abilitybots.api.db.DBContext;
+import org.telegram.telegrambots.abilitybots.api.db.MapDBContext;
 
 @Slf4j
 @Component
@@ -42,11 +46,27 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
             TelegramClient telegramClient,
             AbilityService abilityService,
             BareboneToggle toggle) {
-        super(telegramClient, botProperties.getName(), toggle);
+        super(
+                telegramClient,
+                botProperties.getName(),
+                useInMemoryMapDB(),
+                toggle
+        );
         this.botProperties = botProperties;
         this.kafkaProducer = kafkaProducer;
         this.creatorId = botProperties.getBotCreatorId();
         this.abilityService = abilityService;
+    }
+
+    private static DBContext useInMemoryMapDB() {
+        String useInMemory = System.getenv("USE_INMEMORY_MAPDB");
+        if ("true".equalsIgnoreCase(useInMemory)) {
+            // Use a unique in-memory DB name for each run, stored in a temp folder
+            String dbName = "./tmpdb/inmem-" + UUID.randomUUID();
+            return MapDBContext.offlineInstance(dbName);
+        } else {
+            return MapDBContext.onlineInstance("./tmpdb" + "/MotivationLetterBot");
+        }
     }
 
     @Override

@@ -1,4 +1,3 @@
-FROM openjdk:21-slim
+FROM maven:3.9.6-eclipse-temurin-21
+WORKDIR /app
 EXPOSE 8080
-COPY target/MotivationLetterBot-0.0.1-SNAPSHOT.jar app.jar
-ENTRYPOINT ["java", "-XX:MaxRAM=100M", "-jar", "/app.jar"]
