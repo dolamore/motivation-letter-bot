@@ -1,7 +1,6 @@
 package com.test.motivationletterbot;
 
-import com.test.motivationletterbot.entity.AbilityService;
-import com.test.motivationletterbot.entity.BotProperties;
+import com.test.motivationletterbot.entity.*;
 import com.test.motivationletterbot.kafka.KafkaProducer;
 import com.test.motivationletterbot.kafka.KafkaRequest;
 import org.springframework.kafka.support.SendResult;
@@ -10,7 +9,7 @@ import org.springframework.kafka.support.SendResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.bot.AbilityBot;
-import org.telegram.telegrambots.abilitybots.api.objects.Ability;
+import org.telegram.telegrambots.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.abilitybots.api.toggle.BareboneToggle;
 import org.telegram.telegrambots.longpolling.BotSession;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
@@ -26,6 +25,7 @@ import jakarta.annotation.PostConstruct;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.test.motivationletterbot.MessageConstants.*;
 import static com.test.motivationletterbot.entity.BotCommandEnum.*;
@@ -38,25 +38,29 @@ import org.telegram.telegrambots.abilitybots.api.db.MapDBContext;
 public class MotivationLetterBot extends AbilityBot implements SpringLongPollingBot {
     private final BotProperties botProperties;
     private final KafkaProducer kafkaProducer;
-    private final AbilityService abilityService;
+    private final CommandService commandService;
     private final long creatorId;
 
     public MotivationLetterBot(
             BotProperties botProperties,
             KafkaProducer kafkaProducer,
             TelegramClient telegramClient,
-            AbilityService abilityService,
-            BareboneToggle toggle) {
+            CommandService commandService,
+            BareboneToggle toggle,
+            ConcurrentHashMap<Long, UserSession> userSessions,
+            SilentSender silent,
+            InlineKeyboards inlineKeyboards) {
         super(
                 telegramClient,
                 botProperties.getName(),
                 useInMemoryMapDB(),
                 toggle
         );
+        addExtensions(new Abilities(this, userSessions, silent, telegramClient, inlineKeyboards));
         this.botProperties = botProperties;
         this.kafkaProducer = kafkaProducer;
         this.creatorId = botProperties.getBotCreatorId();
-        this.abilityService = abilityService;
+        this.commandService = commandService;
     }
 
     private static DBContext useInMemoryMapDB() {
@@ -119,26 +123,6 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
 
     }
 
-    public Ability startMessageWriting() {
-        return abilityService.getAbility(START);
-    }
-
-    public Ability startMotivationWriting() {
-        return abilityService.getAbility(START_MOTIVATION);
-    }
-
-    public Ability endMotivationWriting() {
-        return abilityService.getAbility(END_MOTIVATION);
-    }
-
-    public Ability startRoleDescriptionWriting() {
-        return abilityService.getAbility(START_ROLE_DESCRIPTION);
-    }
-
-    public Ability endRoleDescriptionWriting() {
-        return abilityService.getAbility(END_ROLE_DESCRIPTION);
-    }
-
     void sendToKafka(long chatId, String messageText) {
         CompletableFuture<SendResult<String, KafkaRequest>> future = kafkaProducer.sendRequest(
                 new KafkaRequest(chatId, messageText)
@@ -154,7 +138,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     @PostConstruct
     public void init() {
         this.onRegister();
-        abilityService.setBotCommands(START);
+        commandService.setBotCommands(START);
     }
 
     @AfterBotRegistration

@@ -1,35 +1,37 @@
 package com.test.motivationletterbot.entity;
 
+import com.test.motivationletterbot.MotivationLetterBot;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.abilitybots.api.bot.AbilityBot;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
 import org.telegram.telegrambots.abilitybots.api.sender.SilentSender;
+import org.telegram.telegrambots.abilitybots.api.util.AbilityExtension;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
-import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
-import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
+import static com.test.motivationletterbot.entity.BotCommandEnum.*;
+import static com.test.motivationletterbot.entity.BotCommandEnum.END_ROLE_DESCRIPTION;
+import static com.test.motivationletterbot.entity.BotCommandEnum.START_ROLE_DESCRIPTION;
 import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
 @Slf4j
-@Service
-public class AbilityService {
+public class Abilities implements AbilityExtension {
+    private AbilityBot extensionUser;
     private final ConcurrentHashMap<Long, UserSession> userSessions;
     private final SilentSender silent;
     private final TelegramClient telegramClient;
     private final InlineKeyboards inlineKeyboards;
 
-    public AbilityService(
+    public Abilities(
+            MotivationLetterBot motivationLetterBot,
             ConcurrentHashMap<Long, UserSession> userSessions,
             SilentSender silent,
             TelegramClient telegramClient,
@@ -40,8 +42,28 @@ public class AbilityService {
         this.inlineKeyboards = inlineKeyboards;
     }
 
-    public Ability getAbility(BotCommandEnum commandEnum) {
-        return Ability.builder()
+    public Ability startMessageWriting() {
+        return getAbility(START).get();
+    }
+
+    public Ability startMotivationWriting() {
+        return getAbility(START_MOTIVATION).get();
+    }
+
+    public Ability endMotivationWriting() {
+        return getAbility(END_MOTIVATION).get();
+    }
+
+    public Ability startRoleDescriptionWriting() {
+        return getAbility(START_ROLE_DESCRIPTION).get();
+    }
+
+    public Ability endRoleDescriptionWriting() {
+        return getAbility(END_ROLE_DESCRIPTION).get();
+    }
+
+    private Supplier<Ability> getAbility(BotCommandEnum commandEnum) {
+        return () -> Ability.builder()
                 .name(commandEnum.name().toLowerCase())
                 .info(commandEnum.getBotCommand().getDescription())
                 .privacy(PUBLIC)
@@ -77,26 +99,6 @@ public class AbilityService {
                     }
                 })
                 .build();
-    }
-
-    private SetMyCommands getCommandsSet(BotCommandEnum... enums) {
-        List<BotCommand> commands = new ArrayList<>();
-        for (BotCommandEnum e : enums) {
-            commands.add(e.getBotCommand());
-        }
-
-        return SetMyCommands.builder()
-                .commands(commands)
-                .build();
-    }
-
-    public void setBotCommands(BotCommandEnum... enums) {
-        SetMyCommands setMyCommands = getCommandsSet(enums);
-        try {
-            telegramClient.execute(setMyCommands);
-        } catch (TelegramApiException e) {
-            throw new RuntimeException("Failed to set bot commands", e);
-        }
     }
 
     private void removeInlineKeyboard(long chatId, int messageId) {
