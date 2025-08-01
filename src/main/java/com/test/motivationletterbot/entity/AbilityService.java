@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageRe
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
@@ -58,8 +59,18 @@ public class AbilityService {
                                     .build()
                             )
                             .build();
+
+
                     try {
-                        telegramClient.execute(sendMessage);
+                        Message sentMessage = telegramClient.execute(sendMessage);
+
+
+                        if (session.getLastKeyboardMessageId() > 0) {
+                            removeInlineKeyboard(chatId, session.getLastKeyboardMessageId());
+                        }
+
+                        int messageId = sentMessage.getMessageId();
+                        session.setLastKeyboardMessageId(messageId);
                     } catch (Exception e) {
                         // fallback to silent if sending fails
                         silent.send(commandEnum.getMessage(), chatId);
@@ -88,22 +99,17 @@ public class AbilityService {
         }
     }
 
-    public void removeInlineKeyboard(Update update) {
-        if (update.hasCallbackQuery()) {
-            long chatId = update.getCallbackQuery().getMessage().getChatId();
-            int messageId = update.getCallbackQuery().getMessage().getMessageId();
+    private void removeInlineKeyboard(long chatId, int messageId) {
+        EditMessageReplyMarkup editMarkup = EditMessageReplyMarkup.builder()
+                .chatId(chatId)
+                .messageId(messageId)
+                .replyMarkup(null)
+                .build();
 
-            EditMessageReplyMarkup editMarkup = EditMessageReplyMarkup.builder()
-                    .chatId(chatId)
-                    .messageId(messageId)
-                    .replyMarkup(null)
-                    .build();
-
-            try {
-                telegramClient.execute(editMarkup);
-            } catch (TelegramApiException e) {
-                log.error("Failed to remove inline keyboard", e);
-            }
+        try {
+            telegramClient.execute(editMarkup);
+        } catch (TelegramApiException e) {
+            log.error("Failed to remove inline keyboard", e);
         }
     }
 }
