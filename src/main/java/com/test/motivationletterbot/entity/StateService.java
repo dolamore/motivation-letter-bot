@@ -12,10 +12,10 @@
 //
 //    public void setNewState(long chatId, BotStatesEnum state) {
 //        commandService.setBotCommands(chatId, state.getCommands());
-////        try {
-////            telegramClient.execute();
-////        } catch (TelegramApiException e) {
-////            throw new RuntimeException("Failed to set bot state", e);
-////        }
+//        try {
+//            telegramClient.execute();
+//        } catch (TelegramApiException e) {
+//            throw new RuntimeException("Failed to set bot state", e);
+//        }
 //    }
 //}
