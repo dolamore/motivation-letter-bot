@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.bot.AbilityBot;
 import org.telegram.telegrambots.abilitybots.api.objects.Flag;
+import org.telegram.telegrambots.abilitybots.api.objects.MessageContext;
 import org.telegram.telegrambots.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.abilitybots.api.toggle.BareboneToggle;
 import org.telegram.telegrambots.longpolling.BotSession;
@@ -18,6 +19,7 @@ import org.telegram.telegrambots.longpolling.starter.AfterBotRegistration;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
@@ -118,9 +120,12 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
 
         if (update.hasCallbackQuery()) {
             String call_data = update.getCallbackQuery().getData();
+            User user = update.getCallbackQuery().getFrom();
+            Long chatId = update.getCallbackQuery().getMessage().getChatId();
+            MessageContext ctx = MessageContext.newContext(update, user, chatId, this);
 
             if (call_data.equals("MOTIVATION")) {
-
+                getAbilities().get("start_m").action().accept(ctx);
             }
         }
 

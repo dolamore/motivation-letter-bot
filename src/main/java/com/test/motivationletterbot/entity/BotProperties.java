@@ -9,4 +9,5 @@ public class BotProperties {
     private String name;
     private String token;
     private long botCreatorId;
+    private boolean useInmemoryDb;
 }
