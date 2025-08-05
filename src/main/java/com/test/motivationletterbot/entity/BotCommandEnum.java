@@ -19,7 +19,7 @@ import static com.test.motivationletterbot.MessageConstants.*;
 @AllArgsConstructor
 public enum BotCommandEnum {
     START(
-            new BotCommand("start", "Start the bot"),
+            new BotCommand("start", "Start writing motivation letter"),
             "start",
             "Start motivation message creation",
             UserSession::startSession,

@@ -64,13 +64,17 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     }
 
     private static DBContext useInMemoryMapDB() {
-        String useInMemory = System.getenv("USE_INMEMORY_MAPDB");
+        String useInMemory = System.getProperty("bot.use-inmemory-db",
+                System.getenv("USE_INMEMORY_MAPDB"));
+
         if ("true".equalsIgnoreCase(useInMemory)) {
             // Use a unique in-memory DB name for each run, stored in a temp folder
             String dbName = "./tmpdb/inmem-" + UUID.randomUUID();
             return MapDBContext.offlineInstance(dbName);
         } else {
-            return MapDBContext.onlineInstance("./tmpdb" + "/MotivationLetterBot");
+            String dbName = "./tmpdb/MotivationLetterBot-" + System.currentTimeMillis();
+            return MapDBContext.offlineInstance(dbName);
+
         }
     }
 
