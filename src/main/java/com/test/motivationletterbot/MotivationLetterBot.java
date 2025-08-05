@@ -23,7 +23,6 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import jakarta.annotation.PostConstruct;
 
-import java.sql.Time;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,7 +30,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.test.motivationletterbot.MessageConstants.*;
-import static com.test.motivationletterbot.entity.BotCommandEnum.*;
 
 import org.telegram.telegrambots.abilitybots.api.db.DBContext;
 import org.telegram.telegrambots.abilitybots.api.db.MapDBContext;
@@ -47,6 +45,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
             BotProperties botProperties,
             KafkaProducer kafkaProducer,
             TelegramClient telegramClient,
+            CommandService commandService,
             BareboneToggle toggle,
             ConcurrentHashMap<Long, UserSession> userSessions,
             SilentSender silent,
@@ -57,7 +56,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
                 useInMemoryMapDB(),
                 toggle
         );
-        addExtensions(new Abilities(this, userSessions, silent, telegramClient, inlineKeyboards));
+        addExtensions(new Abilities(userSessions, silent, telegramClient, inlineKeyboards, commandService));
         this.botProperties = botProperties;
         this.kafkaProducer = kafkaProducer;
         this.creatorId = botProperties.getBotCreatorId();
@@ -112,7 +111,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     @Override
     public void consume(Update update) {
         if (!checkGlobalFlags(update)) {
-            log.warn("It make no sense to send photos");
+            log.warn("There is nothing i can do with this update");
             return;
         }
         super.consume(update);

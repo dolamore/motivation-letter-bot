@@ -1,35 +1,30 @@
 package com.test.motivationletterbot.entity;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
+import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeChat;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class CommandService {
     private final TelegramClient telegramClient;
 
-    public CommandService(TelegramClient telegramClient) {
-        this.telegramClient = telegramClient;
-    }
 
-    private SetMyCommands getCommandsSet(BotCommandEnum... enums) {
-        List<BotCommand> commands = new ArrayList<>();
-        for (BotCommandEnum e : enums) {
-            commands.add(e.getBotCommand());
-        }
-
+    private SetMyCommands getSetMyCommands(Long chatId, List<BotCommand> commands) {
         return SetMyCommands.builder()
                 .commands(commands)
+                .scope(new BotCommandScopeChat(chatId.toString()))
                 .build();
     }
 
-    public void setBotCommands(BotCommandEnum... enums) {
-        SetMyCommands setMyCommands = getCommandsSet(enums);
+    public void setBotCommands(Long chatId, List<BotCommand> commands) {
+        SetMyCommands setMyCommands = getSetMyCommands(chatId, commands);
         try {
             telegramClient.execute(setMyCommands);
         } catch (TelegramApiException e) {

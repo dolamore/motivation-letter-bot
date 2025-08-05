@@ -1,8 +1,6 @@
 package com.test.motivationletterbot.entity;
 
-import com.test.motivationletterbot.MotivationLetterBot;
 import lombok.extern.slf4j.Slf4j;
-import org.telegram.telegrambots.abilitybots.api.bot.AbilityBot;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
 import org.telegram.telegrambots.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.abilitybots.api.util.AbilityExtension;
@@ -16,9 +14,9 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-import static com.test.motivationletterbot.entity.BotCommandEnum.*;
-import static com.test.motivationletterbot.entity.BotCommandEnum.END_ROLE_DESCRIPTION;
-import static com.test.motivationletterbot.entity.BotCommandEnum.START_ROLE_DESCRIPTION;
+
+import static com.test.motivationletterbot.MessageConstants.ERROR_MESSAGE;
+import static com.test.motivationletterbot.entity.AbilitiesEnum.*;
 import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
@@ -28,13 +26,15 @@ public class Abilities implements AbilityExtension {
     private final SilentSender silent;
     private final TelegramClient telegramClient;
     private final InlineKeyboards inlineKeyboards;
+    private final CommandService commandService;
 
     public Abilities(
-            MotivationLetterBot extensionUser,
             ConcurrentHashMap<Long, UserSession> userSessions,
             SilentSender silent,
             TelegramClient telegramClient,
-            InlineKeyboards inlineKeyboards) {
+            InlineKeyboards inlineKeyboards,
+            CommandService commandService) {
+        this.commandService = commandService;
         this.userSessions = userSessions;
         this.silent = silent;
         this.telegramClient = telegramClient;
@@ -42,41 +42,43 @@ public class Abilities implements AbilityExtension {
     }
 
     public Ability startMessageWriting() {
-        return getAbility(START).get();
+        return getAbility(START_ABILITY).get();
     }
 
     public Ability startMotivationWriting() {
-        return getAbility(START_MOTIVATION).get();
+        return getAbility(START_MOTIVATION_ABILITY).get();
     }
 
     public Ability endMotivationWriting() {
-        return getAbility(END_MOTIVATION).get();
+        return getAbility(END_MOTIVATION_ABILITY).get();
     }
 
     public Ability startRoleDescriptionWriting() {
-        return getAbility(START_ROLE_DESCRIPTION).get();
+        return getAbility(START_ROLE_DESCRIPTION_ABILITY).get();
     }
 
     public Ability endRoleDescriptionWriting() {
-        return getAbility(END_ROLE_DESCRIPTION).get();
+        return getAbility(END_ROLE_DESCRIPTION_ABILITY).get();
     }
 
-    private Supplier<Ability> getAbility(BotCommandEnum commandEnum) {
+    private Supplier<Ability> getAbility(AbilitiesEnum state) {
         return () -> Ability.builder()
-                .name(commandEnum.name().toLowerCase())
-                .info(commandEnum.getBotCommand().getDescription())
+                .name(state.getAbilityName())
+                .info(state.getInfo())
                 .privacy(PUBLIC)
                 .locality(ALL)
                 .action(ctx -> {
                     long chatId = ctx.chatId();
                     UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
-                    commandEnum.getSessionAction().accept(session);
+                    state.getSessionAction().accept(session);
+
+                    commandService.setBotCommands(chatId, state.getCommands());
 
                     SendMessage sendMessage = SendMessage.builder()
                             .chatId(chatId)
-                            .text(commandEnum.getMessage())
+                            .text(state.getMessage())
                             .replyMarkup(InlineKeyboardMarkup.builder()
-                                    .keyboard(commandEnum.getInlineKeyboardSupplier().apply(inlineKeyboards))
+                                    .keyboard(state.getInlineKeyboardSupplier().apply(inlineKeyboards))
                                     .build()
                             )
                             .build();
@@ -94,7 +96,7 @@ public class Abilities implements AbilityExtension {
                         session.setLastKeyboardMessageId(messageId);
                     } catch (Exception e) {
                         // fallback to silent if sending fails
-                        silent.send(commandEnum.getMessage(), chatId);
+                        silent.send(ERROR_MESSAGE, chatId);
                     }
                 })
                 .build();
