@@ -11,11 +11,12 @@ import java.util.function.Function;
 
 import static com.test.motivationletterbot.MessageConstants.STARTING_MESSAGE;
 import static com.test.motivationletterbot.entity.CommandsEnum.*;
+import static com.test.motivationletterbot.entity.BotMenuStateEnum.*;
 
 @Getter
 public enum AbilitiesEnum {
     START_ABILITY(
-            EnumSet.of(START_MOTIVATION_COMMAND, START_ROLE_DESCRIPTION_COMMAND, START_COMMAND),
+            MAIN.getStateCommands(),
             "start",
             "Start motivation message creation",
             UserSession::startSession,
