@@ -11,6 +11,9 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -78,7 +81,12 @@ public class Abilities implements AbilityExtension {
                             .chatId(chatId)
                             .text(state.getMessage())
                             .replyMarkup(InlineKeyboardMarkup.builder()
-                                    .keyboard(state.getInlineKeyboardSupplier().apply(inlineKeyboards))
+                                    .keyboard(
+                                            Optional.ofNullable(state.getInlineKeyboardSupplier())
+                                                    .map(supplier -> supplier.apply(inlineKeyboards))
+                                                    .filter(list -> list != null)
+                                                    .orElse(Collections.emptyList())
+                                    )
                                     .build()
                             )
                             .build();
@@ -88,12 +96,16 @@ public class Abilities implements AbilityExtension {
                         Message sentMessage = telegramClient.execute(sendMessage);
 
 
-                        if (session.getLastKeyboardMessageId() > 0) {
+                        if (session.isLastMessageHadKeyboard() && session.getLastKeyboardMessageId() > 0) {
                             removeInlineKeyboard(chatId, session.getLastKeyboardMessageId());
                         }
 
-                        int messageId = sentMessage.getMessageId();
-                        session.setLastKeyboardMessageId(messageId);
+                        if (state.getInlineKeyboardSupplier().apply(inlineKeyboards) == null) {
+                            session.resetLastMessageKeyboardInfo();
+                        } else {
+                            int messageId = sentMessage.getMessageId();
+                            session.setLastMessageKeyboardInfo(messageId);
+                        }
                     } catch (Exception e) {
                         // fallback to silent if sending fails
                         silent.send(ERROR_MESSAGE, chatId);
@@ -108,11 +120,10 @@ public class Abilities implements AbilityExtension {
                 .messageId(messageId)
                 .replyMarkup(null)
                 .build();
-
         try {
             telegramClient.execute(editMarkup);
         } catch (TelegramApiException e) {
-            log.error("Failed to remove inline keyboard", e);
+            log.error("Failed to remove inline keyboard");
         }
     }
 }

@@ -10,6 +10,7 @@ public class UserSession {
     private final StringBuffer vacancy = new StringBuffer();
 
     private int lastKeyboardMessageId;
+    private boolean lastMessageHadKeyboard = false;
 
     private boolean messageOnWork = false;
     private boolean vacancyOnWork = false;
@@ -22,6 +23,16 @@ public class UserSession {
         if (text != null && !text.isEmpty()) {
             motivation.append(text);
         }
+    }
+
+    public void resetLastMessageKeyboardInfo() {
+        lastKeyboardMessageId = 0;
+        lastMessageHadKeyboard = false;
+    }
+
+    public void setLastMessageKeyboardInfo(int messageId) {
+        lastKeyboardMessageId = messageId;
+        lastMessageHadKeyboard = true;
     }
 
     public void startSession() {
