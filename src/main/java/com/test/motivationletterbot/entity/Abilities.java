@@ -24,18 +24,19 @@ import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
 @Slf4j
 public class Abilities implements AbilityExtension {
-    private AbilityBot extensionUser;
+    private MotivationLetterBot extensionUser;
     private final ConcurrentHashMap<Long, UserSession> userSessions;
     private final SilentSender silent;
     private final TelegramClient telegramClient;
     private final InlineKeyboards inlineKeyboards;
 
     public Abilities(
-            MotivationLetterBot motivationLetterBot,
+            MotivationLetterBot extensionUser,
             ConcurrentHashMap<Long, UserSession> userSessions,
             SilentSender silent,
             TelegramClient telegramClient,
             InlineKeyboards inlineKeyboards) {
+        this.extensionUser = extensionUser;
         this.userSessions = userSessions;
         this.silent = silent;
         this.telegramClient = telegramClient;
