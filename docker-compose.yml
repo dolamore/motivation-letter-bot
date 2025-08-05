@@ -9,6 +9,7 @@ services:
       - kafka
     volumes:
       - .:/app
+      - ~/.m2:/root/.m2
     command: sh -c "mvn spring-boot:run"
     restart: always
     environment:
