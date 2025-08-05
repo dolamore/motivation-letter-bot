@@ -18,7 +18,6 @@ public class UserSession {
     private boolean vacancyIsComplete = false;
     private boolean sessionStarted = false;
 
-
     public void appendMotivation(String text) {
         if (text != null && !text.isEmpty()) {
             motivation.append(text);
