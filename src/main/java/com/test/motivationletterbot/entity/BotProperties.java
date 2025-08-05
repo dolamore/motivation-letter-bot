@@ -1,13 +1,17 @@
 package com.test.motivationletterbot.entity;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
+@Getter
+@Setter
+@Component
 @ConfigurationProperties(prefix = "bot")
-@Data
 public class BotProperties {
     private String name;
     private String token;
-    private long botCreatorId;
+    private Long botCreatorId;
     private boolean useInmemoryDb;
 }
