@@ -78,6 +78,6 @@ public enum AbilitiesEnum {
         this.info = info;
         this.sessionAction = sessionAction;
         this.message = message;
-        this.inlineKeyboardSupplier = inlineKeyboardSupplier;
+        this.inlineKeyboardSupplier = inlineKeyboardSupplier != null ? inlineKeyboardSupplier : chatId -> null;
     }
 }
