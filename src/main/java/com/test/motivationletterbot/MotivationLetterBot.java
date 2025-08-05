@@ -9,6 +9,7 @@ import org.springframework.kafka.support.SendResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.bot.AbilityBot;
+import org.telegram.telegrambots.abilitybots.api.objects.Flag;
 import org.telegram.telegrambots.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.abilitybots.api.toggle.BareboneToggle;
 import org.telegram.telegrambots.longpolling.BotSession;
@@ -22,6 +23,8 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import jakarta.annotation.PostConstruct;
 
+import java.sql.Time;
+import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -38,14 +41,12 @@ import org.telegram.telegrambots.abilitybots.api.db.MapDBContext;
 public class MotivationLetterBot extends AbilityBot implements SpringLongPollingBot {
     private final BotProperties botProperties;
     private final KafkaProducer kafkaProducer;
-    private final CommandService commandService;
     private final long creatorId;
 
     public MotivationLetterBot(
             BotProperties botProperties,
             KafkaProducer kafkaProducer,
             TelegramClient telegramClient,
-            CommandService commandService,
             BareboneToggle toggle,
             ConcurrentHashMap<Long, UserSession> userSessions,
             SilentSender silent,
@@ -60,7 +61,6 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         this.botProperties = botProperties;
         this.kafkaProducer = kafkaProducer;
         this.creatorId = botProperties.getBotCreatorId();
-        this.commandService = commandService;
     }
 
     private static DBContext useInMemoryMapDB() {
@@ -111,6 +111,10 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
 
     @Override
     public void consume(Update update) {
+        if (!checkGlobalFlags(update)) {
+            log.warn("It make no sense to send photos");
+            return;
+        }
         super.consume(update);
 
         if (update.hasCallbackQuery()) {
@@ -125,6 +129,11 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
 
         });
 
+    }
+
+    @Override
+    public boolean checkGlobalFlags(Update update) {
+        return Flag.TEXT.test(update) || Flag.CALLBACK_QUERY.test(update);
     }
 
     void sendToKafka(long chatId, String messageText) {
@@ -142,11 +151,10 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     @PostConstruct
     public void init() {
         this.onRegister();
-        commandService.setBotCommands(START);
     }
 
     @AfterBotRegistration
     public void afterRegistration(BotSession botSession) {
-        log.warn("Registered bot '{}' (token: {}) running state is: {}", botProperties.getName(), botProperties.getToken(), botSession.isRunning());
+        log.warn("\n\n\n{}: Registered bot '{}' (token: {}) running state is: {}", new Date(), botProperties.getName(), botProperties.getToken(), botSession.isRunning());
     }
 }
