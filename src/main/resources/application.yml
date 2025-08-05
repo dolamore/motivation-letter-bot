@@ -1,9 +1,17 @@
 spring:
   main:
     banner-mode: "off"
+  devtools:
+    restart:
+      enabled: true
+      poll-interval: 1s
+      quiet-period: 400ms
+    livereload:
+      enabled: false
+
 
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9093}
     consumer:
       group-id: motivation-letter-bot
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -21,6 +29,7 @@ logging:
   level:
     org.telegram.telegrambots: ERROR
     org.telegram.telegrambots.longpolling.BotSession: OFF
+    org.springframework.boot.devtools: WARN
     root: WARN
   pattern:
     console: "%msg%n"
@@ -29,6 +38,7 @@ bot:
   name: "MotivationLetterBot"
   token: ${BOT_TOKEN:8068325542:AAEanbwFmZ_uLykXOgTf1D9CrLlyNQ52FfI}
   bot-creator-id: ${BOT_CREATOR_ID:946550660}
+  use-inmemory-db: true
 
 motivation-bot:
   kafka:
