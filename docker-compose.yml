@@ -15,6 +15,7 @@ services:
     environment:
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
       USE_INMEMORY_MAPDB: "true"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
 
   zookeeper:
     image: 'confluentinc/cp-zookeeper:7.5.0'
@@ -32,11 +33,14 @@ services:
       - zookeeper
     ports:
       - "9092:9092"
+      - "9093:9093"
     environment:
       KAFKA_LOG4J_LOGGERS: "kafka.controller=WARN,kafka.coordinator.group=WARN,state.change.logger=WARN,kafka.cluster.Partition=WARN,kafka.log.LogManager=WARN,kafka.log.UnifiedLog$=WARN,kafka.server.ReplicaFetcherManager=WARN,kafka.zk.AdminZkClient=WARN"
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_CREATE_TOPICS: "motivation-bot-requests:1:1,motivation-bot-responses:1:1"
