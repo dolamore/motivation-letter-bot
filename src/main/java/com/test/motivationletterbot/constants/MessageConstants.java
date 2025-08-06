@@ -1,4 +1,4 @@
-package com.test.motivationletterbot;
+package com.test.motivationletterbot.constants;
 
 public final class MessageConstants {
     private MessageConstants() {}

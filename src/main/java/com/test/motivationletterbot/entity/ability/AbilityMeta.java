@@ -1,4 +1,6 @@
-package com.test.motivationletterbot.entity;
+package com.test.motivationletterbot.entity.ability;
+
+import com.test.motivationletterbot.entity.commands.CommandsEnum;
 
 public record AbilityMeta(CommandsEnum commandEnum) {
     public String name() {

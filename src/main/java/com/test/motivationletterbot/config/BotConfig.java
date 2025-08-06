@@ -1,7 +1,7 @@
-package com.test.motivationletterbot;
+package com.test.motivationletterbot.config;
 
 import com.test.motivationletterbot.entity.BotProperties;
-import com.test.motivationletterbot.entity.InlineKeyboards;
+import com.test.motivationletterbot.entity.keyboard.InlineKeyboards;
 import com.test.motivationletterbot.entity.UserSession;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;

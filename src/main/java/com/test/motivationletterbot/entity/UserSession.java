@@ -1,5 +1,7 @@
 package com.test.motivationletterbot.entity;
 
+import com.test.motivationletterbot.entity.commands.CommandsEnum;
+import com.test.motivationletterbot.entity.keyboard.InlineKeyboards;
 import lombok.Getter;
 import lombok.Setter;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
@@ -9,8 +11,8 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import static com.test.motivationletterbot.MessageConstants.STARTING_MESSAGE;
-import static com.test.motivationletterbot.entity.BotMenuStateEnum.*;
+import static com.test.motivationletterbot.constants.MessageConstants.STARTING_MESSAGE;
+import static com.test.motivationletterbot.entity.commands.BotMenuStateEnum.*;
 
 @Getter
 @Setter

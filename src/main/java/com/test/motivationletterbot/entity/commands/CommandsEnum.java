@@ -1,4 +1,4 @@
-package com.test.motivationletterbot.entity;
+package com.test.motivationletterbot.entity.commands;
 
 import lombok.Getter;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;

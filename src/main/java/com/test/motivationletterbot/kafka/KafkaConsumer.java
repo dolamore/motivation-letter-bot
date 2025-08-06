@@ -1,7 +1,7 @@
 package com.test.motivationletterbot.kafka;
 
-import com.test.motivationletterbot.MotivationLetterBot;
-import com.test.motivationletterbot.MotivationLetterService;
+import com.test.motivationletterbot.bot.MotivationLetterBot;
+import com.test.motivationletterbot.service.MotivationLetterService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;

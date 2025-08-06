@@ -1,4 +1,4 @@
-package com.test.motivationletterbot.entity;
+package com.test.motivationletterbot.entity.keyboard;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
