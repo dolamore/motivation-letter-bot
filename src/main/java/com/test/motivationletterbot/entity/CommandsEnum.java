@@ -10,13 +10,17 @@ public enum CommandsEnum {
     RESTART_COMMAND("/new", "New motivation message"),
     MENU_COMMAND("/menu", "Return to the main menu"),
 
-    START_MOTIVATION_COMMAND("/start_m", "Write motivation"),
+    WRITE_MOTIVATION_COMMAND("/write_m", "Write motivation"),
     SUBMIT_MOTIVATION_COMMAND("/submit_m", "Submit motivation"),
     DROP_MOTIVATION_COMMAND("/drop_m", "Drop motivation"),
 
-    START_ROLE_DESCRIPTION_COMMAND("/start_rd", "Write role description"),
+    WRITE_ROLE_DESCRIPTION_COMMAND("/write_rd", "Write role description"),
     SUBMIT_ROLE_DESCRIPTION_COMMAND("/submit_rd", "Submit role description"),
-    DROP_ROLE_DESCRIPTION_COMMAND("/drop_rd", "Drop role description");
+    DROP_ROLE_DESCRIPTION_COMMAND("/drop_rd", "Drop role description"),
+
+    WRITE_ADDITIONAL_INFORMATION_COMMAND("/write_ai","Write additional information"),
+    SUBMIT_ADDITIONAL_INFORMATION_COMMAND("/submit_ai","Submit additional information"),
+    DROP_ADDITIONAL_INFORMATION_COMMAND("/drop_ai","Drop additional information");
 
     private final BotCommand botCommand;
 
