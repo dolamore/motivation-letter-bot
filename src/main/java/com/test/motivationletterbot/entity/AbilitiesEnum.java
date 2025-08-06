@@ -15,89 +15,81 @@ import static com.test.motivationletterbot.entity.BotMenuStateEnum.*;
 @Getter
 public enum AbilitiesEnum {
     START_ABILITY(
-            "start",
-            "Start motivation message creation",
+            new AbilityMeta(START_COMMAND),
             MAIN.getStateCommands(),
-            UserSession::startSession,
-            UserSession::startingMessage,
-            UserSession::startKeyboard
+            new AbilityBehavior(UserSession::startSession, UserSession::startingMessage, UserSession::startKeyboard)
+    ),
+    RESTART_ABILITY(
+            new AbilityMeta(RESTART_COMMAND),
+            MAIN.getStateCommands(),
+            new AbilityBehavior(UserSession::startSession, UserSession::startingMessage, UserSession::startKeyboard)
     ),
     MENU_ABILITY(
-            "menu",
-            "Show main menu",
+            new AbilityMeta(MENU_COMMAND),
             EnumSet.of(START_MOTIVATION_COMMAND, START_ROLE_DESCRIPTION_COMMAND, START_COMMAND),
-            UserSession::startSession,
-            UserSession::returnMessage,
-            UserSession::startKeyboard
+            new AbilityBehavior(UserSession::startSession, UserSession::returnMessage, UserSession::startKeyboard)
     ),
     START_MOTIVATION_ABILITY(
-            "start_m",
-            "Write new motivation",
-            EnumSet.of(END_MOTIVATION_COMMAND, START_ROLE_DESCRIPTION_COMMAND, START_COMMAND),
-            UserSession::startMotivationWriting,
-            UserSession::returnMessage,
-            null
+            new AbilityMeta(START_MOTIVATION_COMMAND),
+            EnumSet.of(SUBMIT_MOTIVATION_COMMAND, START_ROLE_DESCRIPTION_COMMAND, START_COMMAND),
+            new AbilityBehavior(UserSession::startMotivationWriting, UserSession::returnMessage, null)
     ),
     CONTINUE_MOTIVATION_ABILITY(
-            "continue_m",
-            "Continue writing motivation",
-            EnumSet.of(END_MOTIVATION_COMMAND, START_ROLE_DESCRIPTION_COMMAND, START_COMMAND),
-            UserSession::startMotivationWriting,
-            UserSession::returnMessage,
-            null
+            new AbilityMeta(START_MOTIVATION_COMMAND), // or a CONTINUE_COMMAND if exists
+            EnumSet.of(SUBMIT_MOTIVATION_COMMAND, START_ROLE_DESCRIPTION_COMMAND, START_COMMAND),
+            new AbilityBehavior(UserSession::startMotivationWriting, UserSession::returnMessage, null)
     ),
     RECORD_MOTIVATION_ABILITY(
-            "end_m",
-            "End motivation writing",
+            new AbilityMeta(SUBMIT_MOTIVATION_COMMAND),
             EnumSet.of(START_MOTIVATION_COMMAND, START_ROLE_DESCRIPTION_COMMAND, START_COMMAND),
-            UserSession::completeMotivation,
-            UserSession::returnMessage,
-            null
+            new AbilityBehavior(UserSession::completeMotivation, UserSession::returnMessage, null)
     ),
     END_MOTIVATION_ABILITY(
-            "end_m",
-            "End motivation writing",
+            new AbilityMeta(SUBMIT_MOTIVATION_COMMAND),
             EnumSet.of(START_MOTIVATION_COMMAND, START_ROLE_DESCRIPTION_COMMAND, START_COMMAND),
-            UserSession::completeMotivation,
-            UserSession::returnMessage,
-            null
+            new AbilityBehavior(UserSession::completeMotivation, UserSession::returnMessage, null)
     ),
     START_ROLE_DESCRIPTION_ABILITY(
-            "start_rd",
-            "Start role description writing",
+            new AbilityMeta(START_ROLE_DESCRIPTION_COMMAND),
             EnumSet.of(START_MOTIVATION_COMMAND, START_ROLE_DESCRIPTION_COMMAND, START_COMMAND),
-            UserSession::resetVacancy,
-            UserSession::returnMessage,
-            null
+            new AbilityBehavior(UserSession::resetVacancy, UserSession::returnMessage, null)
     ),
     END_ROLE_DESCRIPTION_ABILITY(
-            "end_rd",
-            "End role description writing",
+            new AbilityMeta(SUBMIT_ROLE_DESCRIPTION_COMMAND),
             EnumSet.of(START_MOTIVATION_COMMAND, START_ROLE_DESCRIPTION_COMMAND, START_COMMAND),
-            UserSession::completeVacancy,
-            UserSession::returnMessage,
-            null
+            new AbilityBehavior(UserSession::completeVacancy, UserSession::returnMessage, null)
     );
 
-    private final String abilityName;
-    private final String info;
+    private final AbilityMeta meta;
     private final List<BotCommand> commands;
-    private final Consumer<UserSession> sessionAction;
-    private final Function<UserSession, String> message;
-    private final Function<UserSession, List<InlineKeyboardRow>> inlineKeyboardSupplier;
+    private final AbilityBehavior behavior;
+
+    public String getAbilityName() {
+        return meta.name();
+    }
+
+    public String getInfo() {
+        return meta.info();
+    }
+
+    public Consumer<UserSession> getSessionAction() {
+        return behavior.sessionAction();
+    }
+
+    public Function<UserSession, String> getMessage() {
+        return behavior.message();
+    }
+
+    public Function<UserSession, List<InlineKeyboardRow>> getInlineKeyboardSupplier() {
+        return behavior.inlineKeyboardSupplier();
+    }
 
     AbilitiesEnum(
-            String abilityName,
-            String info,
+            AbilityMeta meta,
             EnumSet<CommandsEnum> commands,
-            Consumer<UserSession> sessionAction,
-            Function<UserSession, String> message,
-            Function<UserSession, List<InlineKeyboardRow>> inlineKeyboardSupplier) {
+            AbilityBehavior behavior) {
         this.commands = commands.stream().map(CommandsEnum::getBotCommand).toList();
-        this.abilityName = abilityName;
-        this.info = info;
-        this.sessionAction = sessionAction;
-        this.message = message;
-        this.inlineKeyboardSupplier = inlineKeyboardSupplier != null ? inlineKeyboardSupplier : chatId -> null;
+        this.meta = meta;
+        this.behavior = behavior;
     }
 }

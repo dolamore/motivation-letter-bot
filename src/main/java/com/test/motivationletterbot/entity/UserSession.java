@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.test.motivationletterbot.MessageConstants.STARTING_MESSAGE;
@@ -11,34 +12,18 @@ import static com.test.motivationletterbot.MessageConstants.STARTING_MESSAGE;
 @Getter
 @Setter
 public class UserSession {
+    @Setter
     private static InlineKeyboards inlineKeyboards;
-
-    public static void setInlineKeyboards(InlineKeyboards keyboards) {
-        inlineKeyboards = keyboards;
-    }
 
     private boolean messageOnWork = false;
     private boolean sessionStarted = false;
 
-
-    private final StringBuffer motivation = new StringBuffer();
-    private String finalMotivation;
-    private boolean isMotivationOnWork = false;
-    private boolean isMotivationComplete = false;
-
-    private final StringBuffer vacancy = new StringBuffer();
-    private String finalVacancy;
-    private boolean isVacancyOnWork = false;
-    private boolean isVacancyComplete = false;
+    private final List<TextEntry> entries = new ArrayList<>();
+    private final TextEntry motivation = new TextEntry();
+    private final TextEntry vacancy = new TextEntry();
 
     private int lastKeyboardMessageId;
     private boolean lastMessageHadKeyboard = false;
-
-    public void appendMotivation(String text) {
-        if (text != null && !text.isEmpty()) {
-            motivation.append(text);
-        }
-    }
 
     public void resetLastMessageKeyboardInfo() {
         lastKeyboardMessageId = 0;
@@ -51,61 +36,39 @@ public class UserSession {
     }
 
     public void startSession() {
-        sessionStarted = true;
+        motivation.reset();
+        vacancy.reset();
     }
 
-    public void endSession() {
-        sessionStarted = false;
-        startMotivationWriting();
-        resetVacancy();
+    public boolean isMotivationComplete() {
+        return motivation.isComplete();
     }
+
+    public boolean isVacancyComplete() {
+        return vacancy.isComplete();
+    }
+
 
     public void startMotivationWriting() {
-        motivation.setLength(0);
-        isMotivationComplete = false; //do we really need it?
-        isMotivationOnWork = true;
+        motivation.startWriting();
     }
 
     public void appendVacancy(String text) {
-        if (text != null && !text.isEmpty()) {
-            vacancy.append(text);
-        }
+        vacancy.append(text);
     }
 
     public void resetVacancy() {
-        vacancy.setLength(0);
-        isVacancyComplete = false;
-        isVacancyOnWork = true;
+        vacancy.reset();
     }
 
     public void completeVacancy() {
         // Remove the last 7 characters ("/end_rd") from the buffer
-        var len = vacancy.length();
-        vacancy.delete(len - 7, len);
-
-        finalVacancy = vacancy.toString();
-
-        isVacancyComplete = true;
-        isVacancyOnWork = false;
-    }
-
-    public void vacancyOnWork() {
-        this.isVacancyOnWork = true;
-    }
-
-    public void motivationOnWork() {
-        this.isMotivationOnWork = true;
+        vacancy.complete(7);
     }
 
     public void completeMotivation() {
         // Remove the last 6 characters ("/end_m") from the buffer
-        var len = motivation.length();
-        motivation.delete(len - 6, len);
-
-        finalMotivation = motivation.toString();
-
-        isMotivationComplete = true;
-        isMotivationOnWork = false;
+        motivation.complete(6);
     }
 
     public String returnMessage() {
@@ -114,6 +77,10 @@ public class UserSession {
 
     public String startingMessage() {
         return STARTING_MESSAGE;
+    }
+
+    public String restartingMessage() {
+        return "You can start writing a new motivation letter or role description.";
     }
 
     public List<InlineKeyboardRow> startKeyboard() {
