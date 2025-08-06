@@ -1,4 +1,4 @@
-package com.test.motivationletterbot;
+package com.test.motivationletterbot.config;
 
 import com.test.motivationletterbot.entity.BotProperties;
 

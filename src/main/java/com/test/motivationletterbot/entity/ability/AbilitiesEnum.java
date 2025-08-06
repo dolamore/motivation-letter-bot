@@ -1,5 +1,6 @@
-package com.test.motivationletterbot.entity;
+package com.test.motivationletterbot.entity.ability;
 
+import com.test.motivationletterbot.entity.UserSession;
 import lombok.Getter;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
@@ -7,7 +8,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.test.motivationletterbot.entity.CommandsEnum.*;
+import static com.test.motivationletterbot.entity.commands.CommandsEnum.*;
 
 @Getter
 public enum AbilitiesEnum {

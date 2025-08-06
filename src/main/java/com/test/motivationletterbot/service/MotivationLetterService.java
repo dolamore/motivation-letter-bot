@@ -1,4 +1,4 @@
-package com.test.motivationletterbot;
+package com.test.motivationletterbot.service;
 
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package com.test.motivationletterbot.entity;
+package com.test.motivationletterbot.entity.commands;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

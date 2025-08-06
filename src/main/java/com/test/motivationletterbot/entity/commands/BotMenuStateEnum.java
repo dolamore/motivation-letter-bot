@@ -1,11 +1,11 @@
-package com.test.motivationletterbot.entity;
+package com.test.motivationletterbot.entity.commands;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.EnumSet;
 
-import static com.test.motivationletterbot.entity.CommandsEnum.*;
+import static com.test.motivationletterbot.entity.commands.CommandsEnum.*;
 
 @Getter
 @AllArgsConstructor

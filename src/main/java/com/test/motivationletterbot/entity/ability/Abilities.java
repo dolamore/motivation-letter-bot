@@ -1,5 +1,7 @@
-package com.test.motivationletterbot.entity;
+package com.test.motivationletterbot.entity.ability;
 
+import com.test.motivationletterbot.entity.commands.CommandService;
+import com.test.motivationletterbot.entity.UserSession;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
 import org.telegram.telegrambots.abilitybots.api.sender.SilentSender;
@@ -18,8 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 
-import static com.test.motivationletterbot.MessageConstants.ERROR_MESSAGE;
-import static com.test.motivationletterbot.entity.AbilitiesEnum.*;
+import static com.test.motivationletterbot.constants.MessageConstants.ERROR_MESSAGE;
+import static com.test.motivationletterbot.entity.ability.AbilitiesEnum.*;
 import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 

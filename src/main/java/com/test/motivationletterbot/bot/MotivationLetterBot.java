@@ -1,6 +1,9 @@
-package com.test.motivationletterbot;
+package com.test.motivationletterbot.bot;
 
 import com.test.motivationletterbot.entity.*;
+import com.test.motivationletterbot.entity.ability.Abilities;
+import com.test.motivationletterbot.entity.commands.CommandService;
+import com.test.motivationletterbot.entity.keyboard.InlineKeyboards;
 import com.test.motivationletterbot.kafka.KafkaProducer;
 import com.test.motivationletterbot.kafka.KafkaRequest;
 import org.springframework.kafka.support.SendResult;
@@ -30,7 +33,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.test.motivationletterbot.MessageConstants.*;
+import static com.test.motivationletterbot.constants.MessageConstants.*;
 
 import org.telegram.telegrambots.abilitybots.api.db.DBContext;
 import org.telegram.telegrambots.abilitybots.api.db.MapDBContext;
@@ -50,8 +53,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
             CommandService commandService,
             BareboneToggle toggle,
             ConcurrentHashMap<Long, UserSession> userSessions,
-            SilentSender silent,
-            InlineKeyboards inlineKeyboards) {
+            SilentSender silent) {
         super(
                 telegramClient,
                 botProperties.getName(),
@@ -63,6 +65,32 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         this.kafkaProducer = kafkaProducer;
         this.creatorId = botProperties.getBotCreatorId();
         this.userSessions = userSessions;
+    }
+
+    @Override
+    public void consume(Update update) {
+        if (!checkGlobalFlags(update)) {
+            log.warn("There is nothing i can do with this update");
+            return;
+        }
+
+        UserSession userSession = getOrCreateUserSession(update);
+
+        if (update.hasCallbackQuery()) {
+            var ctx = buildCallbackContext(update);
+            var call_data = update.getCallbackQuery().getData();
+
+            getAbilities().get(call_data).action().accept(ctx);
+
+            return;
+        }
+
+        super.consume(update);
+
+        Optional.ofNullable(update.getMessage()).ifPresent(message -> {
+
+        });
+
     }
 
     private static DBContext useInMemoryMapDB() {
@@ -109,32 +137,6 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         } catch (TelegramApiException e) {
             log.error("Failed to send message", e);
         }
-    }
-
-    @Override
-    public void consume(Update update) {
-        if (!checkGlobalFlags(update)) {
-            log.warn("There is nothing i can do with this update");
-            return;
-        }
-
-        UserSession userSession = getOrCreateUserSession(update);
-
-        if (update.hasCallbackQuery()) {
-            var ctx = buildCallbackContext(update);
-            var call_data = update.getCallbackQuery().getData();
-
-            getAbilities().get(call_data).action().accept(ctx);
-
-            return;
-        }
-
-        super.consume(update);
-
-        Optional.ofNullable(update.getMessage()).ifPresent(message -> {
-
-        });
-
     }
 
     private UserSession getOrCreateUserSession(Update update) {

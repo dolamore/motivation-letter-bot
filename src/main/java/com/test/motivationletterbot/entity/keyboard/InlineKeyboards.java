@@ -1,11 +1,11 @@
-package com.test.motivationletterbot.entity;
+package com.test.motivationletterbot.entity.keyboard;
 
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
 import java.util.List;
 
-import static com.test.motivationletterbot.entity.KeyboardRowEnum.*;
+import static com.test.motivationletterbot.entity.keyboard.KeyboardRowEnum.*;
 
 @Component
 public class InlineKeyboards {
