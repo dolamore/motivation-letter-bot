@@ -2,12 +2,15 @@ package com.test.motivationletterbot.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import static com.test.motivationletterbot.MessageConstants.STARTING_MESSAGE;
+import static com.test.motivationletterbot.entity.BotMenuStateEnum.*;
 
 @Getter
 @Setter
@@ -24,6 +27,17 @@ public class UserSession {
 
     private int lastKeyboardMessageId;
     private boolean lastMessageHadKeyboard = false;
+
+    private EnumSet<CommandsEnum> menuState = START_MENU_STATE.getStateCommands();
+
+
+    public List<BotCommand> getBotCommands() {
+        List<BotCommand> commands = new ArrayList<>();
+        for (CommandsEnum command : menuState) {
+            commands.add(command.getBotCommand());
+        }
+        return commands;
+    }
 
     public void resetLastMessageKeyboardInfo() {
         lastKeyboardMessageId = 0;

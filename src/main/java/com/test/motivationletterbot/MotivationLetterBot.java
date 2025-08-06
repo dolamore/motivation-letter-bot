@@ -126,8 +126,6 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
 
             if (call_data.equals("MOTIVATION")) {
                 if (userSession.isMotivationComplete()) {
-
-                } else {
                     getAbilities().get("start_m").action().accept(ctx);
                 }
             }

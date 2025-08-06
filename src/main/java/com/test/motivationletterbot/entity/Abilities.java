@@ -45,6 +45,10 @@ public class Abilities implements AbilityExtension {
         return getAbility(START_ABILITY).get();
     }
 
+    public Ability restartMessageWriting() {
+        return getAbility(RESTART_ABILITY).get();
+    }
+
     public Ability startMotivationWriting() {
         return getAbility(START_MOTIVATION_ABILITY).get();
     }
@@ -72,14 +76,14 @@ public class Abilities implements AbilityExtension {
                     UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
                     state.getSessionAction().accept(session);
 
-                    commandService.setBotCommands(chatId, state.getCommands());
+                    commandService.setBotCommands(chatId, session.getBotCommands());
 
                     SendMessage sendMessage = SendMessage.builder()
                             .chatId(chatId)
                             .text(state.getMessage().apply(session))
                             .replyMarkup(InlineKeyboardMarkup.builder()
                                     .keyboard(
-                                            Optional.of(state.getInlineKeyboardSupplier())
+                                            Optional.ofNullable(state.getInlineKeyboardSupplier())
                                                     .map(supplier -> supplier.apply(session))
                                                     .filter(Objects::nonNull)
                                                     .orElse(Collections.emptyList())
