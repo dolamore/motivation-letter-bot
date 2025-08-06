@@ -1,26 +1,19 @@
 package com.test.motivationletterbot.entity;
 
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
 import java.util.List;
+
+import static com.test.motivationletterbot.entity.KeyboardRowEnum.*;
 
 @Component
 public class InlineKeyboards {
     public List<InlineKeyboardRow> startKeyboard() {
         return List.of(
-                createRow("Motivation", "MOTIVATION"),
-                createRow("Role description", "ROLE_DESCRIPTION"),
-                createRow("Additional information", "ADDITIONAL_INFORMATION")
+                MOTIVATION_ROW.getRow(),
+                ROLE_DESCRIPTION_ROW.getRow(),
+                ADDITIONAL_INFORMATION_ROW.getRow()
         );
-    }
-
-    private InlineKeyboardRow createRow(String text, String callbackData) {
-        InlineKeyboardButton button = InlineKeyboardButton.builder()
-                .text(text)
-                .callbackData(callbackData)
-                .build();
-        return new InlineKeyboardRow(button);  // This is InlineKeyboardRow (which is just List<InlineKeyboardButton>)
     }
 }

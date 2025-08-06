@@ -116,6 +116,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
             log.warn("There is nothing i can do with this update");
             return;
         }
+
         super.consume(update);
 
         if (update.hasCallbackQuery()) {
