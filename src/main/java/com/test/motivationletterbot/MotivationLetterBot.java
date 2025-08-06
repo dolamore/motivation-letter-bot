@@ -19,7 +19,6 @@ import org.telegram.telegrambots.longpolling.starter.AfterBotRegistration;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
@@ -42,6 +41,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     private final BotProperties botProperties;
     private final KafkaProducer kafkaProducer;
     private final long creatorId;
+    private final ConcurrentHashMap<Long, UserSession> userSessions;
 
     public MotivationLetterBot(
             BotProperties botProperties,
@@ -62,6 +62,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         this.botProperties = botProperties;
         this.kafkaProducer = kafkaProducer;
         this.creatorId = botProperties.getBotCreatorId();
+        this.userSessions = userSessions;
     }
 
     private static DBContext useInMemoryMapDB() {
@@ -117,22 +118,41 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
             return;
         }
 
-        super.consume(update);
+        UserSession userSession = getOrCreateUserSession(update);
 
         if (update.hasCallbackQuery()) {
-            var callback = update.getCallbackQuery();
-            var ctx = MessageContext.newContext(update, callback.getFrom(), callback.getMessage().getChatId(), this);
-            var call_data = callback.getData();
+            var ctx = buildCallbackContext(update);
+            var call_data = update.getCallbackQuery().getData();
 
             if (call_data.equals("MOTIVATION")) {
-                getAbilities().get("start_m").action().accept(ctx);
+                if (userSession.isMotivationComplete()) {
+
+                } else {
+                    getAbilities().get("start_m").action().accept(ctx);
+                }
             }
+
+            return;
         }
+
+        super.consume(update);
 
         Optional.ofNullable(update.getMessage()).ifPresent(message -> {
 
         });
 
+    }
+
+    private UserSession getOrCreateUserSession(Update update) {
+        long chatId = update.getMessage() != null
+                ? update.getMessage().getChatId()
+                : update.getCallbackQuery().getMessage().getChatId();
+        return userSessions.computeIfAbsent(chatId, id -> new UserSession());
+    }
+
+    private MessageContext buildCallbackContext(Update update) {
+        var callback = update.getCallbackQuery();
+        return MessageContext.newContext(update, callback.getFrom(), callback.getMessage().getChatId(), this);
     }
 
     @Override

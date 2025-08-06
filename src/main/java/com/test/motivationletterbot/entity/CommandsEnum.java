@@ -6,7 +6,7 @@ import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 
 @Getter
 public enum CommandsEnum {
-    START_COMMAND("/start", "Start the bot and get a welcome message"),
+    START_COMMAND("/start", "Start writing motivation message"),
     MENU_COMMAND("/menu", "Show the main menu"),
     START_MOTIVATION_COMMAND("/start_m", "Start writing a motivation message"),
     END_MOTIVATION_COMMAND("/end_m", "End writing a motivation message"),

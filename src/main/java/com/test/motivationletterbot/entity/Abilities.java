@@ -53,7 +53,7 @@ public class Abilities implements AbilityExtension {
     }
 
     public Ability endMotivationWriting() {
-        return getAbility(END_MOTIVATION_ABILITY).get();
+        return getAbility(RECORD_MOTIVATION_ABILITY).get();
     }
 
     public Ability startRoleDescriptionWriting() {
@@ -79,12 +79,12 @@ public class Abilities implements AbilityExtension {
 
                     SendMessage sendMessage = SendMessage.builder()
                             .chatId(chatId)
-                            .text(state.getMessage())
+                            .text(state.getMessage().apply(session))
                             .replyMarkup(InlineKeyboardMarkup.builder()
                                     .keyboard(
-                                            Optional.ofNullable(state.getInlineKeyboardSupplier())
+                                            Optional.of(state.getInlineKeyboardSupplier())
                                                     .map(supplier -> supplier.apply(inlineKeyboards))
-                                                    .filter(list -> list != null)
+                                                    .filter(Objects::nonNull)
                                                     .orElse(Collections.emptyList())
                                     )
                                     .build()
