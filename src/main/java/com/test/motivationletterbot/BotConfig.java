@@ -1,8 +1,11 @@
 package com.test.motivationletterbot;
 
 import com.test.motivationletterbot.entity.BotProperties;
+import com.test.motivationletterbot.entity.InlineKeyboards;
 import com.test.motivationletterbot.entity.UserSession;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -59,5 +62,13 @@ public class BotConfig {
     @Bean
     public BareboneToggle bareboneToggle() {
         return new BareboneToggle();
+    }
+
+    @Autowired
+    private InlineKeyboards inlineKeyboards;
+
+    @PostConstruct
+    public void injectInlineKeyboards() {
+        UserSession.setInlineKeyboards(inlineKeyboards);
     }
 }

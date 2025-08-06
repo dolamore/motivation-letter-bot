@@ -58,7 +58,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
                 useInMemoryMapDB(),
                 toggle
         );
-        addExtensions(new Abilities(userSessions, silent, telegramClient, inlineKeyboards, commandService));
+        addExtensions(new Abilities(userSessions, silent, telegramClient, commandService));
         this.botProperties = botProperties;
         this.kafkaProducer = kafkaProducer;
         this.creatorId = botProperties.getBotCreatorId();

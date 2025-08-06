@@ -2,10 +2,20 @@ package com.test.motivationletterbot.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
+
+import java.util.List;
+
+import static com.test.motivationletterbot.MessageConstants.STARTING_MESSAGE;
 
 @Getter
 @Setter
 public class UserSession {
+    private static InlineKeyboards inlineKeyboards;
+
+    public static void setInlineKeyboards(InlineKeyboards keyboards) {
+        inlineKeyboards = keyboards;
+    }
 
     private boolean messageOnWork = false;
     private boolean sessionStarted = false;
@@ -100,5 +110,13 @@ public class UserSession {
 
     public String returnMessage() {
         return "message";
+    }
+
+    public String startingMessage() {
+        return STARTING_MESSAGE;
+    }
+
+    public List<InlineKeyboardRow> startKeyboard() {
+        return inlineKeyboards.startKeyboard();
     }
 }

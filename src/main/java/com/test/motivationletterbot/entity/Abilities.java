@@ -28,20 +28,17 @@ public class Abilities implements AbilityExtension {
     private final ConcurrentHashMap<Long, UserSession> userSessions;
     private final SilentSender silent;
     private final TelegramClient telegramClient;
-    private final InlineKeyboards inlineKeyboards;
     private final CommandService commandService;
 
     public Abilities(
             ConcurrentHashMap<Long, UserSession> userSessions,
             SilentSender silent,
             TelegramClient telegramClient,
-            InlineKeyboards inlineKeyboards,
             CommandService commandService) {
         this.commandService = commandService;
         this.userSessions = userSessions;
         this.silent = silent;
         this.telegramClient = telegramClient;
-        this.inlineKeyboards = inlineKeyboards;
     }
 
     public Ability startMessageWriting() {
@@ -83,7 +80,7 @@ public class Abilities implements AbilityExtension {
                             .replyMarkup(InlineKeyboardMarkup.builder()
                                     .keyboard(
                                             Optional.of(state.getInlineKeyboardSupplier())
-                                                    .map(supplier -> supplier.apply(inlineKeyboards))
+                                                    .map(supplier -> supplier.apply(session))
                                                     .filter(Objects::nonNull)
                                                     .orElse(Collections.emptyList())
                                     )
@@ -100,7 +97,7 @@ public class Abilities implements AbilityExtension {
                             removeInlineKeyboard(chatId, session.getLastKeyboardMessageId());
                         }
 
-                        if (state.getInlineKeyboardSupplier().apply(inlineKeyboards) == null) {
+                        if (state.getInlineKeyboardSupplier().apply(session) == null) {
                             session.resetLastMessageKeyboardInfo();
                         } else {
                             int messageId = sentMessage.getMessageId();
