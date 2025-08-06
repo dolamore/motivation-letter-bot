@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.test.motivationletterbot.MessageConstants.STARTING_MESSAGE;
 import static com.test.motivationletterbot.entity.CommandsEnum.*;
 import static com.test.motivationletterbot.entity.BotMenuStateEnum.*;
 
@@ -20,7 +19,7 @@ public enum AbilitiesEnum {
             "start",
             "Start motivation message creation",
             UserSession::startSession,
-            STARTING_MESSAGE,
+            UserSession::returnMessage,
             InlineKeyboards::startKeyboard
     ),
     MENU_ABILITY(
@@ -28,15 +27,31 @@ public enum AbilitiesEnum {
             "menu",
             "Show main menu",
             UserSession::startSession,
-            "Main menu displayed",
+            UserSession::returnMessage,
             InlineKeyboards::startKeyboard
     ),
     START_MOTIVATION_ABILITY(
             EnumSet.of(END_MOTIVATION_COMMAND, START_ROLE_DESCRIPTION_COMMAND, START_COMMAND),
             "start_m",
-            "Start motivation writing",
-            UserSession::resetMotivation,
-            "Please provide your motivation text!",
+            "Write new motivation",
+            UserSession::startMotivationWriting,
+            UserSession::returnMessage,
+            null
+    ),
+    CONTINUE_MOTIVATION_ABILITY(
+            EnumSet.of(END_MOTIVATION_COMMAND, START_ROLE_DESCRIPTION_COMMAND, START_COMMAND),
+            "continue_m",
+            "Continue writing motivation",
+            UserSession::startMotivationWriting,
+            UserSession::returnMessage,
+            null
+    ),
+    RECORD_MOTIVATION_ABILITY(
+            EnumSet.of(START_MOTIVATION_COMMAND, START_ROLE_DESCRIPTION_COMMAND, START_COMMAND),
+            "end_m",
+            "End motivation writing",
+            UserSession::completeMotivation,
+            UserSession::returnMessage,
             null
     ),
     END_MOTIVATION_ABILITY(
@@ -44,7 +59,7 @@ public enum AbilitiesEnum {
             "end_m",
             "End motivation writing",
             UserSession::completeMotivation,
-            "Your motivation text was successfully recorded",
+            UserSession::returnMessage,
             null
     ),
     START_ROLE_DESCRIPTION_ABILITY(
@@ -52,7 +67,7 @@ public enum AbilitiesEnum {
             "start_rd",
             "Start role description writing",
             UserSession::resetVacancy,
-            "Please provide your role description!",
+            UserSession::returnMessage,
             null
     ),
     END_ROLE_DESCRIPTION_ABILITY(
@@ -60,7 +75,7 @@ public enum AbilitiesEnum {
             "end_rd",
             "End role description writing",
             UserSession::completeVacancy,
-            "Your role description was successfully recorded",
+            UserSession::returnMessage,
             null
     );
 
@@ -68,11 +83,11 @@ public enum AbilitiesEnum {
     private final String abilityName;
     private final String info;
     private final Consumer<UserSession> sessionAction;
-    private final String message;
+    private final Function<UserSession, String> message;
     private final Function<InlineKeyboards, List<InlineKeyboardRow>> inlineKeyboardSupplier;
 
     AbilitiesEnum(EnumSet<CommandsEnum> commands, String abilityName, String info,
-                  Consumer<UserSession> sessionAction, String message,
+                  Consumer<UserSession> sessionAction, Function<UserSession, String> message,
                   Function<InlineKeyboards, List<InlineKeyboardRow>> inlineKeyboardSupplier) {
         this.commands = commands.stream().map(CommandsEnum::getBotCommand).toList();
         this.abilityName = abilityName;

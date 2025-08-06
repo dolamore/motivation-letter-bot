@@ -6,18 +6,23 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserSession {
+
+    private boolean messageOnWork = false;
+    private boolean sessionStarted = false;
+
+
     private final StringBuffer motivation = new StringBuffer();
+    private String finalMotivation;
+    private boolean isMotivationOnWork = false;
+    private boolean isMotivationComplete = false;
+
     private final StringBuffer vacancy = new StringBuffer();
+    private String finalVacancy;
+    private boolean isVacancyOnWork = false;
+    private boolean isVacancyComplete = false;
 
     private int lastKeyboardMessageId;
     private boolean lastMessageHadKeyboard = false;
-
-    private boolean messageOnWork = false;
-    private boolean vacancyOnWork = false;
-    private boolean motivationOnWork = false;
-    private boolean motivationIsComplete = false;
-    private boolean vacancyIsComplete = false;
-    private boolean sessionStarted = false;
 
     public void appendMotivation(String text) {
         if (text != null && !text.isEmpty()) {
@@ -41,14 +46,14 @@ public class UserSession {
 
     public void endSession() {
         sessionStarted = false;
-        resetMotivation();
+        startMotivationWriting();
         resetVacancy();
     }
 
-    public void resetMotivation() {
+    public void startMotivationWriting() {
         motivation.setLength(0);
-        motivationIsComplete = false;
-        motivationOnWork = true;
+        isMotivationComplete = false; //do we really need it?
+        isMotivationOnWork = true;
     }
 
     public void appendVacancy(String text) {
@@ -59,33 +64,41 @@ public class UserSession {
 
     public void resetVacancy() {
         vacancy.setLength(0);
-        vacancyIsComplete = false;
-        vacancyOnWork = true;
+        isVacancyComplete = false;
+        isVacancyOnWork = true;
     }
 
     public void completeVacancy() {
         // Remove the last 7 characters ("/end_rd") from the buffer
-        int len = vacancy.length();
+        var len = vacancy.length();
         vacancy.delete(len - 7, len);
 
-        this.vacancyIsComplete = true;
-        this.vacancyOnWork = false;
+        finalVacancy = vacancy.toString();
+
+        isVacancyComplete = true;
+        isVacancyOnWork = false;
     }
 
     public void vacancyOnWork() {
-        this.vacancyOnWork = true;
+        this.isVacancyOnWork = true;
     }
 
     public void motivationOnWork() {
-        this.motivationOnWork = true;
+        this.isMotivationOnWork = true;
     }
 
     public void completeMotivation() {
         // Remove the last 6 characters ("/end_m") from the buffer
-        int len = motivation.length();
+        var len = motivation.length();
         motivation.delete(len - 6, len);
 
-        this.motivationIsComplete = true;
-        this.motivationOnWork = false;
+        finalMotivation = motivation.toString();
+
+        isMotivationComplete = true;
+        isMotivationOnWork = false;
+    }
+
+    public String returnMessage() {
+        return "message";
     }
 }
