@@ -38,5 +38,9 @@ public class TextEntry {
         complete = true;
         onWork = false;
     }
+
+    public boolean isTextEmpty() {
+        return text.length() == 0;
+    }
 }
 

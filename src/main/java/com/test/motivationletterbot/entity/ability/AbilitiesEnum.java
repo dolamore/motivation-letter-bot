@@ -22,32 +22,62 @@ public enum AbilitiesEnum {
     ),
     MENU_ABILITY(
             new AbilityMeta(MENU_COMMAND),
-            new AbilityBehavior(UserSession::startSession, UserSession::returnMessage, UserSession::startKeyboard)
+            new AbilityBehavior(UserSession::startSession, UserSession::startingMessage, UserSession::startKeyboard)
     ),
-    START_MOTIVATION_ABILITY(
+
+
+    WRITE_MOTIVATION_ABILITY(
             new AbilityMeta(WRITE_MOTIVATION_COMMAND),
-            new AbilityBehavior(UserSession::startMotivationWriting, UserSession::returnMessage, null)
+            new AbilityBehavior(UserSession::startMotivationWriting, UserSession::writeMotivationMessage, UserSession::motivationKeyboard)
     ),
     CONTINUE_MOTIVATION_ABILITY(
-            new AbilityMeta(WRITE_MOTIVATION_COMMAND), // or a CONTINUE_COMMAND if exists
-            new AbilityBehavior(UserSession::startMotivationWriting, UserSession::returnMessage, null)
+            new AbilityMeta(CONTINUE_MOTIVATION_COMMAND),
+            new AbilityBehavior(UserSession::continueMotivationWriting, UserSession::continueMotivationMessage, UserSession::continueMotivationKeyboard)
     ),
     RECORD_MOTIVATION_ABILITY(
             new AbilityMeta(SUBMIT_MOTIVATION_COMMAND),
             new AbilityBehavior(UserSession::completeMotivation, UserSession::returnMessage, null)
     ),
-    END_MOTIVATION_ABILITY(
-            new AbilityMeta(SUBMIT_MOTIVATION_COMMAND),
+    DROP_MOTIVATION_ABILITY(
+            new AbilityMeta(DROP_MOTIVATION_COMMAND),
             new AbilityBehavior(UserSession::completeMotivation, UserSession::returnMessage, null)
     ),
+
+
     START_ROLE_DESCRIPTION_ABILITY(
             new AbilityMeta(WRITE_ROLE_DESCRIPTION_COMMAND),
             new AbilityBehavior(UserSession::resetVacancy, UserSession::returnMessage, null)
     ),
-    END_ROLE_DESCRIPTION_ABILITY(
+    CONTINUE_ROLE_DESCRIPTION_ABILITY(
+            new AbilityMeta(SUBMIT_ROLE_DESCRIPTION_COMMAND),
+            new AbilityBehavior(UserSession::completeVacancy, UserSession::returnMessage, null)
+    ),
+    RECORD_ROLE_DESCRIPTION_ABILITY(
+            new AbilityMeta(SUBMIT_ROLE_DESCRIPTION_COMMAND),
+            new AbilityBehavior(UserSession::completeVacancy, UserSession::returnMessage, null)
+    ),
+    DROP_ROLE_DESCRIPTION_ABILITY(
             new AbilityMeta(SUBMIT_ROLE_DESCRIPTION_COMMAND),
             new AbilityBehavior(UserSession::completeVacancy, UserSession::returnMessage, null)
     );
+
+
+//    START_ADDITIONAL_INFORMATION_ABILITY(
+//            new AbilityMeta(WRITE_ADDITIONAL_INFORMATION_COMMAND),
+//            new AbilityBehavior(UserSession::resetAdditionalInformation, UserSession::returnMessage, null)
+//    ),
+//    CONTINUE_ADDITIONAL_INFORMATION_ABILITY(
+//            new AbilityMeta(CONTINUE_ADDITIONAL_INFORMATION_COMMAND),
+//            new AbilityBehavior(UserSession::completeAdditionalInformation, UserSession::returnMessage, null)
+//    ),
+//    RECORD_ADDITIONAL_INFORMATION_ABILITY(
+//            new AbilityMeta(SUBMIT_ADDITIONAL_INFORMATION_COMMAND),
+//            new AbilityBehavior(UserSession::completeAdditionalInformation, UserSession::returnMessage, null)
+//    ),
+//    DROP_ADDITIONAL_INFORMATION_ABILITY(
+//            new AbilityMeta(DROP_ADDITIONAL_INFORMATION_COMMAND),
+//            new AbilityBehavior(UserSession::completeAdditionalInformation, UserSession::returnMessage, null)
+//    );
 
     private final AbilityMeta meta;
     private final AbilityBehavior behavior;

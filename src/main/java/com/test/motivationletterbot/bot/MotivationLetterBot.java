@@ -74,10 +74,10 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
             return;
         }
 
-        UserSession userSession = getOrCreateUserSession(update);
+        UserSession session = getOrCreateUserSession(update);
+        var ctx = buildContext(update);
 
         if (update.hasCallbackQuery()) {
-            var ctx = buildCallbackContext(update);
             var call_data = update.getCallbackQuery().getData();
 
             getAbilities().get(call_data).action().accept(ctx);
@@ -88,7 +88,11 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         super.consume(update);
 
         Optional.ofNullable(update.getMessage()).ifPresent(message -> {
+            if (session.isMotivationOnWork()) {
+                session.addMotivationText(message.getText());
 
+                getAbilities().get("cont_m").action().accept(ctx);
+            }
         });
 
     }
@@ -146,9 +150,15 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         return userSessions.computeIfAbsent(chatId, id -> new UserSession());
     }
 
-    private MessageContext buildCallbackContext(Update update) {
-        var callback = update.getCallbackQuery();
-        return MessageContext.newContext(update, callback.getFrom(), callback.getMessage().getChatId(), this);
+    private MessageContext buildContext(Update update) {
+        if (update.hasCallbackQuery()) {
+            var callback = update.getCallbackQuery();
+            return MessageContext.newContext(update, callback.getFrom(), callback.getMessage().getChatId(), this);
+        } else if (update.hasMessage()) {
+            var message = update.getMessage();
+            return MessageContext.newContext(update, message.getFrom(), message.getChatId(), this);
+        }
+        throw new IllegalArgumentException("Update does not contain a message or callback query");
     }
 
     @Override
