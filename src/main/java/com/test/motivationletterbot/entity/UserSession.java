@@ -67,6 +67,14 @@ public class UserSession {
 
     public void startMotivationWriting() {
         motivation.startWriting();
+        menuState = MOTIVATION_MENU_STATE.getStateCommands();
+    }
+
+    public void continueMotivationWriting() {
+        menuState.add(CommandsEnum.SUBMIT_MOTIVATION_COMMAND);
+        if (motivation.isComplete()) {
+            menuState.add(CommandsEnum.DROP_MOTIVATION_COMMAND);
+        }
     }
 
     public void appendVacancy(String text) {
@@ -91,6 +99,17 @@ public class UserSession {
         return "message";
     }
 
+    public String writeMotivationMessage() {
+        return "Please provide your motivation.";
+    }
+
+    public String continueMotivationMessage() {
+        if (motivation.complete) {
+            return "You motivation is complete. You are just adding the new version now. You can drop it or write more text and/or submit your new motivation.";
+        }
+        return "Please add more text or submit your motivation.";
+    }
+
     public String startingMessage() {
         return STARTING_MESSAGE;
     }
@@ -100,6 +119,30 @@ public class UserSession {
     }
 
     public List<InlineKeyboardRow> startKeyboard() {
-        return inlineKeyboards.startKeyboard();
+        return inlineKeyboards.getStartKeyboard();
+    }
+
+    public List<InlineKeyboardRow> emptyKeyboard() {
+        return inlineKeyboards.getEmptyKeyboard();
+    }
+
+    public List<InlineKeyboardRow> motivationKeyboard() {
+        if (motivation.isTextEmpty()) {
+            return inlineKeyboards.getEmptyMotivationKeyboard();
+        }
+        return inlineKeyboards.getCompletedMotivationKeyboard();
+    }
+
+    public List<InlineKeyboardRow> continueMotivationKeyboard() {
+        return inlineKeyboards.getContinueMotivationKeyboard();
+    }
+
+    public boolean isMotivationOnWork() {
+        return motivation.isOnWork();
+    }
+
+    public void addMotivationText(String text) {
+        motivation.append(text);
+        menuState.add(CommandsEnum.SUBMIT_MOTIVATION_COMMAND);
     }
 }

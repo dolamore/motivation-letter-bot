@@ -52,11 +52,15 @@ public class Abilities implements AbilityExtension {
     }
 
     public Ability startMotivationWriting() {
-        return getAbility(START_MOTIVATION_ABILITY).get();
+        return getAbility(WRITE_MOTIVATION_ABILITY).get();
     }
 
-    public Ability endMotivationWriting() {
+    public Ability recordMotivation() {
         return getAbility(RECORD_MOTIVATION_ABILITY).get();
+    }
+
+    public Ability continueMotivationWriting() {
+        return getAbility(CONTINUE_MOTIVATION_ABILITY).get();
     }
 
     public Ability startRoleDescriptionWriting() {
@@ -64,7 +68,7 @@ public class Abilities implements AbilityExtension {
     }
 
     public Ability endRoleDescriptionWriting() {
-        return getAbility(END_ROLE_DESCRIPTION_ABILITY).get();
+        return getAbility(RECORD_ROLE_DESCRIPTION_ABILITY).get();
     }
 
     private Supplier<Ability> getAbility(AbilitiesEnum state) {
