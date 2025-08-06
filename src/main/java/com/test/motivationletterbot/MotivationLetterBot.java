@@ -119,10 +119,9 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         super.consume(update);
 
         if (update.hasCallbackQuery()) {
-            String call_data = update.getCallbackQuery().getData();
-            User user = update.getCallbackQuery().getFrom();
-            Long chatId = update.getCallbackQuery().getMessage().getChatId();
-            MessageContext ctx = MessageContext.newContext(update, user, chatId, this);
+            var callback = update.getCallbackQuery();
+            var ctx = MessageContext.newContext(update, callback.getFrom(), callback.getMessage().getChatId(), this);
+            var call_data = callback.getData();
 
             if (call_data.equals("MOTIVATION")) {
                 getAbilities().get("start_m").action().accept(ctx);
