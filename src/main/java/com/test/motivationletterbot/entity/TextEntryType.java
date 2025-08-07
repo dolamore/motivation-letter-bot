@@ -9,43 +9,6 @@ import static com.test.motivationletterbot.entity.TextEntryTypeParams.*;
 @AllArgsConstructor
 public enum TextEntryType {
 
-    MOTIVATION_TEXT_ENTRY(MOTIVATION_TEXT_ENTRY_PARAMS) {
-        @Override
-        public CommandsEnum getSubmitCommand() {
-            return CommandsEnum.SUBMIT_MOTIVATION_COMMAND;
-        }
-
-        @Override
-        public String getWriteMessage() {
-            return "Please write your motivation letter.";
-        }
-
-        @Override
-        public String getContinueMessage() {
-            return "Please continue writing your motivation letter or submit it.";
-        }
-
-        @Override
-        public String getWriteCompletedMessage() {
-            return getWriteCompletedMessage("motivation");
-        }
-
-        @Override
-        public String getContinueCompletedMessage() {
-            return getContinueCompletedMessage("motivation");
-        }
-
-        @Override
-        public String getMenuMessage() {
-            return "(OPTIONALLY) your motivation text\n";
-        }
-
-        @Override
-        public CommandsEnum getMainMenuCommand() {
-            return CommandsEnum.WRITE_MOTIVATION_COMMAND;
-        }
-    },
-
     VACANCY_TEXT_ENTRY(VACANCY_TEXT_ENTRY_PARAMS) {
         @Override
         public CommandsEnum getSubmitCommand() {
@@ -80,6 +43,43 @@ public enum TextEntryType {
         @Override
         public CommandsEnum getMainMenuCommand() {
             return CommandsEnum.WRITE_ROLE_DESCRIPTION_COMMAND;
+        }
+    },
+
+    MOTIVATION_TEXT_ENTRY(MOTIVATION_TEXT_ENTRY_PARAMS) {
+        @Override
+        public CommandsEnum getSubmitCommand() {
+            return CommandsEnum.SUBMIT_MOTIVATION_COMMAND;
+        }
+
+        @Override
+        public String getWriteMessage() {
+            return "Please write your motivation letter.";
+        }
+
+        @Override
+        public String getContinueMessage() {
+            return "Please continue writing your motivation letter or submit it.";
+        }
+
+        @Override
+        public String getWriteCompletedMessage() {
+            return getWriteCompletedMessage("motivation");
+        }
+
+        @Override
+        public String getContinueCompletedMessage() {
+            return getContinueCompletedMessage("motivation");
+        }
+
+        @Override
+        public String getMenuMessage() {
+            return "(OPTIONALLY) your motivation text\n";
+        }
+
+        @Override
+        public CommandsEnum getMainMenuCommand() {
+            return CommandsEnum.WRITE_MOTIVATION_COMMAND;
         }
     },
 

@@ -8,11 +8,11 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 @Getter
 @AllArgsConstructor
 public enum KeyboardRowEnum {
-    MOTIVATION_ROW(createRow("Motivation", "write_m")),
-    SUBMIT_MOTIVATION_ROW(createRow("Submit", "submit_m")),
-
     ROLE_DESCRIPTION_ROW(createRow("Role description", "write_rd")),
     SUBMIT_ROLE_DESCRIPTION_ROW(createRow("Submit", "submit_rd")),
+
+    MOTIVATION_ROW(createRow("Motivation", "write_m")),
+    SUBMIT_MOTIVATION_ROW(createRow("Submit", "submit_m")),
 
     ADDITIONAL_INFORMATION_ROW(createRow("Company/product spec", "write_ai")),
     SUBMIT_ADDITIONAL_INFORMATION_ROW(createRow("Submit", "submit_ai")),

@@ -10,13 +10,13 @@ public enum CommandsEnum {
     RESTART_COMMAND("/new", "New motivation message"),
     MENU_COMMAND("/menu", "Return to the main menu"),
 
-    WRITE_MOTIVATION_COMMAND("/write_m", "Write motivation"),
-    CONTINUE_MOTIVATION_COMMAND("/cont_m", "Continue writing motivation"),
-    SUBMIT_MOTIVATION_COMMAND("/submit_m", "Submit motivation"),
-
     WRITE_ROLE_DESCRIPTION_COMMAND("/write_rd", "Write role description"),
     CONTINUE_ROLE_DESCRIPTION_COMMAND("/cont_rd", "Continue writing role description"),
     SUBMIT_ROLE_DESCRIPTION_COMMAND("/submit_rd", "Submit role description"),
+
+    WRITE_MOTIVATION_COMMAND("/write_m", "Write motivation"),
+    CONTINUE_MOTIVATION_COMMAND("/cont_m", "Continue writing motivation"),
+    SUBMIT_MOTIVATION_COMMAND("/submit_m", "Submit motivation"),
 
     WRITE_ADDITIONAL_INFORMATION_COMMAND("/write_ai", "Write additional information"),
     CONTINUE_ADDITIONAL_INFORMATION_COMMAND("/cont_ai", "Continue writing additional information"),
