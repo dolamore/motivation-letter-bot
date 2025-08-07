@@ -1,10 +1,10 @@
-package com.test.motivationletterbot.entity;
+package com.test.motivationletterbot.entity.textentry;
 
 import com.test.motivationletterbot.entity.commands.CommandsEnum;
 import lombok.AllArgsConstructor;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
-import static com.test.motivationletterbot.entity.TextEntryTypeParams.*;
+import static com.test.motivationletterbot.entity.textentry.TextEntryTypeParams.*;
 
 @AllArgsConstructor
 public enum TextEntryType {
@@ -128,6 +128,10 @@ public enum TextEntryType {
 
     public InlineKeyboardRow getSubmitKeyboardRow() {
         return params.submitKeyboardRow();
+    }
+
+    public String getContinueAbilityKey() {
+        return params.continueAbilityKey();
     }
 
     public abstract CommandsEnum getMainMenuCommand();

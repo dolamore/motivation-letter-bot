@@ -1,6 +1,6 @@
 package com.test.motivationletterbot.entity.keyboard;
 
-import com.test.motivationletterbot.entity.TextEntry;
+import com.test.motivationletterbot.entity.textentry.TextEntry;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;

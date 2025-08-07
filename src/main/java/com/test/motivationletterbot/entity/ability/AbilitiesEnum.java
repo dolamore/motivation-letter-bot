@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.test.motivationletterbot.entity.TextEntryType.*;
+import static com.test.motivationletterbot.entity.textentry.TextEntryType.*;
 import static com.test.motivationletterbot.entity.commands.CommandsEnum.*;
 
 @Getter
