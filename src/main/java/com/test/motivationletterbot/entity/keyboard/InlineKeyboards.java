@@ -22,7 +22,7 @@ public class InlineKeyboards {
     }
 
     private List<InlineKeyboardRow> startKeyboard() {
-        return List.of(MOTIVATION_ROW.getRow(), ROLE_DESCRIPTION_ROW.getRow(), ADDITIONAL_INFORMATION_ROW.getRow());
+        return List.of(ROLE_DESCRIPTION_ROW.getRow(), MOTIVATION_ROW.getRow(), ADDITIONAL_INFORMATION_ROW.getRow());
     }
 
     public List<InlineKeyboardRow> getContinueKeyboard(TextEntry textEntry) {
