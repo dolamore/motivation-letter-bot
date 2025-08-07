@@ -26,6 +26,11 @@ public enum TextEntryType {
         }
 
         @Override
+        public String getWriteCompletedMessage() {
+            return getWriteCompletedMessage("motivation");
+        }
+
+        @Override
         public String getContinueCompletedMessage() {
             return getContinueCompletedMessage("motivation");
         }
@@ -58,6 +63,11 @@ public enum TextEntryType {
         }
 
         @Override
+        public String getWriteCompletedMessage() {
+            return getWriteCompletedMessage("role description");
+        }
+
+        @Override
         public String getContinueCompletedMessage() {
             return getContinueCompletedMessage("role description");
         }
@@ -87,6 +97,11 @@ public enum TextEntryType {
         @Override
         public String getContinueMessage() {
             return "Please continue writing additional information or submit it.";
+        }
+
+        @Override
+        public String getWriteCompletedMessage() {
+            return getWriteCompletedMessage("additional information");
         }
 
         @Override
@@ -123,11 +138,17 @@ public enum TextEntryType {
 
     public abstract String getContinueMessage();
 
+    public abstract String getWriteCompletedMessage();
+
     public abstract String getContinueCompletedMessage();
 
     public abstract CommandsEnum getSubmitCommand();
 
+    static String getWriteCompletedMessage(String entryName) {
+        return "Your " + entryName + " is complete. You are just adding the new version now. You can safely return to main menu or write the new text.";
+    }
+
     static String getContinueCompletedMessage(String entryName) {
-        return "Your " + entryName + " is complete. You are just adding the new version now. You can drop it or write more text and/or submit your new " + entryName + ".";
+        return "You are in the process of rewriting the completed " + entryName + ". You can safely return to main menu, or submit the new version.";
     }
 }
