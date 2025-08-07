@@ -1,6 +1,7 @@
 package com.test.motivationletterbot.entity.ability;
 
 import com.test.motivationletterbot.entity.UserSession;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
@@ -8,76 +9,71 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static com.test.motivationletterbot.entity.TextEntryType.*;
 import static com.test.motivationletterbot.entity.commands.CommandsEnum.*;
 
 @Getter
+@AllArgsConstructor
 public enum AbilitiesEnum {
     START_ABILITY(
             new AbilityMeta(START_COMMAND),
-            new AbilityBehavior(UserSession::startSession, UserSession::startingMessage, UserSession::startKeyboard)
+            AbilityBehavior.createStartBehavior()
     ),
     RESTART_ABILITY(
             new AbilityMeta(RESTART_COMMAND),
-            new AbilityBehavior(UserSession::startSession, UserSession::startingMessage, UserSession::startKeyboard)
+            AbilityBehavior.createStartBehavior()
     ),
     MENU_ABILITY(
             new AbilityMeta(MENU_COMMAND),
-            new AbilityBehavior(UserSession::startSession, UserSession::startingMessage, UserSession::startKeyboard)
+            new AbilityBehavior(
+                    UserSession::returnToMenu,
+                    UserSession::menuMessage,
+                    UserSession::menuKeyboard
+            )
     ),
 
 
     WRITE_MOTIVATION_ABILITY(
             new AbilityMeta(WRITE_MOTIVATION_COMMAND),
-            new AbilityBehavior(UserSession::startMotivationWriting, UserSession::writeMotivationMessage, UserSession::motivationKeyboard)
+            AbilityBehavior.createWriteBehavior(MOTIVATION_TEXT_ENTRY)
     ),
     CONTINUE_MOTIVATION_ABILITY(
             new AbilityMeta(CONTINUE_MOTIVATION_COMMAND),
-            new AbilityBehavior(UserSession::continueMotivationWriting, UserSession::continueMotivationMessage, UserSession::continueMotivationKeyboard)
+            AbilityBehavior.createContinueBehavior(MOTIVATION_TEXT_ENTRY)
     ),
     RECORD_MOTIVATION_ABILITY(
             new AbilityMeta(SUBMIT_MOTIVATION_COMMAND),
-            new AbilityBehavior(UserSession::completeMotivation, UserSession::returnMessage, null)
-    ),
-    DROP_MOTIVATION_ABILITY(
-            new AbilityMeta(DROP_MOTIVATION_COMMAND),
-            new AbilityBehavior(UserSession::completeMotivation, UserSession::returnMessage, null)
+            AbilityBehavior.createRecordBehavior(MOTIVATION_TEXT_ENTRY)
     ),
 
 
-    START_ROLE_DESCRIPTION_ABILITY(
+    WRITE_ROLE_DESCRIPTION_ABILITY(
             new AbilityMeta(WRITE_ROLE_DESCRIPTION_COMMAND),
-            new AbilityBehavior(UserSession::resetVacancy, UserSession::returnMessage, null)
+            AbilityBehavior.createWriteBehavior(VACANCY_TEXT_ENTRY)
     ),
     CONTINUE_ROLE_DESCRIPTION_ABILITY(
-            new AbilityMeta(SUBMIT_ROLE_DESCRIPTION_COMMAND),
-            new AbilityBehavior(UserSession::completeVacancy, UserSession::returnMessage, null)
+            new AbilityMeta(CONTINUE_ROLE_DESCRIPTION_COMMAND),
+            AbilityBehavior.createContinueBehavior(VACANCY_TEXT_ENTRY)
     ),
     RECORD_ROLE_DESCRIPTION_ABILITY(
             new AbilityMeta(SUBMIT_ROLE_DESCRIPTION_COMMAND),
-            new AbilityBehavior(UserSession::completeVacancy, UserSession::returnMessage, null)
+            AbilityBehavior.createRecordBehavior(VACANCY_TEXT_ENTRY)
     ),
-    DROP_ROLE_DESCRIPTION_ABILITY(
-            new AbilityMeta(SUBMIT_ROLE_DESCRIPTION_COMMAND),
-            new AbilityBehavior(UserSession::completeVacancy, UserSession::returnMessage, null)
+
+
+    WRITE_ADDITIONAL_INFORMATION_ABILITY(
+            new AbilityMeta(WRITE_ADDITIONAL_INFORMATION_COMMAND),
+            AbilityBehavior.createWriteBehavior(ADDITIONAL_INFORMATION_TEXT_ENTRY)
+    ),
+    CONTINUE_ADDITIONAL_INFORMATION_ABILITY(
+            new AbilityMeta(CONTINUE_ADDITIONAL_INFORMATION_COMMAND),
+            AbilityBehavior.createContinueBehavior(ADDITIONAL_INFORMATION_TEXT_ENTRY)
+    ),
+    RECORD_ADDITIONAL_INFORMATION_ABILITY(
+            new AbilityMeta(SUBMIT_ADDITIONAL_INFORMATION_COMMAND),
+            AbilityBehavior.createRecordBehavior(ADDITIONAL_INFORMATION_TEXT_ENTRY)
     );
 
-
-//    START_ADDITIONAL_INFORMATION_ABILITY(
-//            new AbilityMeta(WRITE_ADDITIONAL_INFORMATION_COMMAND),
-//            new AbilityBehavior(UserSession::resetAdditionalInformation, UserSession::returnMessage, null)
-//    ),
-//    CONTINUE_ADDITIONAL_INFORMATION_ABILITY(
-//            new AbilityMeta(CONTINUE_ADDITIONAL_INFORMATION_COMMAND),
-//            new AbilityBehavior(UserSession::completeAdditionalInformation, UserSession::returnMessage, null)
-//    ),
-//    RECORD_ADDITIONAL_INFORMATION_ABILITY(
-//            new AbilityMeta(SUBMIT_ADDITIONAL_INFORMATION_COMMAND),
-//            new AbilityBehavior(UserSession::completeAdditionalInformation, UserSession::returnMessage, null)
-//    ),
-//    DROP_ADDITIONAL_INFORMATION_ABILITY(
-//            new AbilityMeta(DROP_ADDITIONAL_INFORMATION_COMMAND),
-//            new AbilityBehavior(UserSession::completeAdditionalInformation, UserSession::returnMessage, null)
-//    );
 
     private final AbilityMeta meta;
     private final AbilityBehavior behavior;
@@ -100,12 +96,5 @@ public enum AbilitiesEnum {
 
     public Function<UserSession, List<InlineKeyboardRow>> getInlineKeyboardSupplier() {
         return behavior.inlineKeyboardSupplier();
-    }
-
-    AbilitiesEnum(
-            AbilityMeta meta,
-            AbilityBehavior behavior) {
-        this.meta = meta;
-        this.behavior = behavior;
     }
 }
