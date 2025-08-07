@@ -6,6 +6,7 @@ import com.test.motivationletterbot.entity.commands.CommandService;
 import com.test.motivationletterbot.entity.keyboard.InlineKeyboards;
 import com.test.motivationletterbot.kafka.KafkaProducer;
 import com.test.motivationletterbot.kafka.KafkaRequest;
+import com.test.motivationletterbot.util.BotUtils;
 import org.springframework.kafka.support.SendResult;
 
 
@@ -34,6 +35,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.test.motivationletterbot.constants.MessageConstants.*;
+import static com.test.motivationletterbot.entity.TextEntryType.MOTIVATION_TEXT_ENTRY;
 
 import org.telegram.telegrambots.abilitybots.api.db.DBContext;
 import org.telegram.telegrambots.abilitybots.api.db.MapDBContext;
@@ -88,10 +90,11 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         super.consume(update);
 
         Optional.ofNullable(update.getMessage()).ifPresent(message -> {
-            if (session.isMotivationOnWork()) {
-                session.addMotivationText(message.getText());
-                log.warn(session.getEntries().get(TextEntryType.MOTIVATION_TEXT_ENTRY).getText().toString());
+            if (session.isMotivationOnWork() && !BotUtils.isCommand(message)) {
+                session.addText(MOTIVATION_TEXT_ENTRY, message.getText());
                 getAbilities().get("cont_m").action().accept(ctx);
+
+                log.warn(session.getEntries().get(MOTIVATION_TEXT_ENTRY).getText().toString());
             }
         });
 
