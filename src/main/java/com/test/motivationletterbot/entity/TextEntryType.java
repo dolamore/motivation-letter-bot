@@ -107,10 +107,6 @@ public enum TextEntryType {
 
     private final TextEntryTypeParams params;
 
-    public int getCommandLength() {
-        return params.commandLength();
-    }
-
     public InlineKeyboardRow getKeyboardRow() {
         return params.keyboardRow();
     }

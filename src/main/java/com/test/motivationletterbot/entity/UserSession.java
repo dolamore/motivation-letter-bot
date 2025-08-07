@@ -84,7 +84,7 @@ public class UserSession {
     }
 
     public void completeTextEntry(TextEntryType type) {
-        entries.get(type).complete(type.getCommandLength());
+        entries.get(type).complete();
     }
 
     public String writeMessage(TextEntryType type) {
