@@ -9,11 +9,17 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 @AllArgsConstructor
 public enum KeyboardRowEnum {
     MOTIVATION_ROW(createRow("Motivation", "write_m")),
-    ROLE_DESCRIPTION_ROW(createRow("Role description", "ROLE_DESCRIPTION")),
-    ADDITIONAL_INFORMATION_ROW(createRow("Company/product spec", "ADDITIONAL_INFORMATION")),
+    SUBMIT_MOTIVATION_ROW(createRow("Submit", "submit_m")),
+
+    ROLE_DESCRIPTION_ROW(createRow("Role description", "write_rd")),
+    SUBMIT_ROLE_DESCRIPTION_ROW(createRow("Submit", "submit_rd")),
+
+    ADDITIONAL_INFORMATION_ROW(createRow("Company/product spec", "write_ai")),
+    SUBMIT_ADDITIONAL_INFORMATION_ROW(createRow("Submit", "submit_ai")),
+
     RETURN_MENU_ROW(createRow("Return to menu", "menu")),
-    SUBMIT_ROW(createRow("Submit", "SUBMIT")),
-    DROP_ROW(createRow("Drop", "DROP"));
+    SUBMIT_ROW(createRow("Submit", "submit")),
+    GENERATE_ROW(createRow("Generate Message", "generate"));
 
     private static InlineKeyboardRow createRow(String text, String callbackData) {
         InlineKeyboardButton button = InlineKeyboardButton.builder()

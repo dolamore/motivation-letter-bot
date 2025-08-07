@@ -51,25 +51,49 @@ public class Abilities implements AbilityExtension {
         return getAbility(RESTART_ABILITY).get();
     }
 
-    public Ability startMotivationWriting() {
-        return getAbility(WRITE_MOTIVATION_ABILITY).get();
+    public Ability returnToMainMenu() {
+        return getAbility(MENU_ABILITY).get();
     }
 
-    public Ability recordMotivation() {
-        return getAbility(RECORD_MOTIVATION_ABILITY).get();
+
+    public Ability writeMotivation() {
+        return getAbility(WRITE_MOTIVATION_ABILITY).get();
     }
 
     public Ability continueMotivationWriting() {
         return getAbility(CONTINUE_MOTIVATION_ABILITY).get();
     }
 
-    public Ability startRoleDescriptionWriting() {
-        return getAbility(START_ROLE_DESCRIPTION_ABILITY).get();
+    public Ability recordMotivation() {
+        return getAbility(RECORD_MOTIVATION_ABILITY).get();
     }
 
-    public Ability endRoleDescriptionWriting() {
+
+    public Ability writeRoleDescription() {
+        return getAbility(WRITE_ROLE_DESCRIPTION_ABILITY).get();
+    }
+
+    public Ability continueRoleDescriptionWriting() {
+        return getAbility(CONTINUE_ROLE_DESCRIPTION_ABILITY).get();
+    }
+
+    public Ability recordRoleDescription() {
         return getAbility(RECORD_ROLE_DESCRIPTION_ABILITY).get();
     }
+
+
+    public Ability writeAdditionalInformation() {
+        return getAbility(WRITE_ADDITIONAL_INFORMATION_ABILITY).get();
+    }
+
+    public Ability continueAdditionalInformationWriting() {
+        return getAbility(CONTINUE_ADDITIONAL_INFORMATION_ABILITY).get();
+    }
+
+    public Ability recordAdditionalInformation() {
+        return getAbility(RECORD_ADDITIONAL_INFORMATION_ABILITY).get();
+    }
+
 
     private Supplier<Ability> getAbility(AbilitiesEnum state) {
         return () -> Ability.builder()

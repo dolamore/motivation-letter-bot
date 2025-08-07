@@ -90,7 +90,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         Optional.ofNullable(update.getMessage()).ifPresent(message -> {
             if (session.isMotivationOnWork()) {
                 session.addMotivationText(message.getText());
-
+                log.warn(session.getEntries().get(TextEntryType.MOTIVATION_TEXT_ENTRY).getText().toString());
                 getAbilities().get("cont_m").action().accept(ctx);
             }
         });

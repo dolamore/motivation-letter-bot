@@ -7,12 +7,15 @@ import lombok.Setter;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
-import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 
+import static com.test.motivationletterbot.constants.MessageConstants.MENU_MESSAGE;
 import static com.test.motivationletterbot.constants.MessageConstants.STARTING_MESSAGE;
+import static com.test.motivationletterbot.entity.TextEntryType.VACANCY_TEXT_ENTRY;
 import static com.test.motivationletterbot.entity.commands.BotMenuStateEnum.*;
+import static com.test.motivationletterbot.entity.keyboard.KeyboardRowEnum.GENERATE_ROW;
 
 @Getter
 @Setter
@@ -23,22 +26,23 @@ public class UserSession {
     private boolean messageOnWork = false;
     private boolean sessionStarted = false;
 
-    private final List<TextEntry> entries = new ArrayList<>();
-    private final TextEntry motivation = new TextEntry();
-    private final TextEntry vacancy = new TextEntry();
+    private final EnumMap<TextEntryType, TextEntry> entries = new EnumMap<>(TextEntryType.class);
 
     private int lastKeyboardMessageId;
     private boolean lastMessageHadKeyboard = false;
 
     private EnumSet<CommandsEnum> menuState = START_MENU_STATE.getStateCommands();
 
+    public UserSession() {
+        for (TextEntryType type : TextEntryType.values()) {
+            entries.put(type, new TextEntry(type));
+        }
+    }
 
     public List<BotCommand> getBotCommands() {
-        List<BotCommand> commands = new ArrayList<>();
-        for (CommandsEnum command : menuState) {
-            commands.add(command.getBotCommand());
-        }
-        return commands;
+        return menuState.stream()
+                .map(CommandsEnum::getBotCommand)
+                .toList();
     }
 
     public void resetLastMessageKeyboardInfo() {
@@ -52,97 +56,85 @@ public class UserSession {
     }
 
     public void startSession() {
-        motivation.reset();
-        vacancy.reset();
+
+        //TODO: make main menu state being dynamic
+        menuState = MAIN_MENU_STATE.getStateCommands();
+        entries.values().forEach(TextEntry::reset);
+        entries.values().forEach(entry -> entry.addButtonIfNotCompleted(menuState));
     }
 
-    public boolean isMotivationComplete() {
-        return motivation.isComplete();
+    public void returnToMenu() {
+        menuState = MAIN_MENU_STATE.getStateCommands();
+        entries.values().forEach(entry -> entry.addButtonIfNotCompleted(menuState));
     }
 
-    public boolean isVacancyComplete() {
-        return vacancy.isComplete();
+    public void startWriting(TextEntryType textEntryType) {
+        var entry = entries.get(textEntryType);
+        entry.startWriting();
+        //menuState = entry.getStateCommands();
     }
 
-
-    public void startMotivationWriting() {
-        motivation.startWriting();
-        menuState = MOTIVATION_MENU_STATE.getStateCommands();
+    public void continueWriting(TextEntryType textEntryType) {
+        var entry = entries.get(textEntryType);
+        menuState.add(entry.getSubmitCommand());
     }
 
-    public void continueMotivationWriting() {
-        menuState.add(CommandsEnum.SUBMIT_MOTIVATION_COMMAND);
-        if (motivation.isComplete()) {
-            menuState.add(CommandsEnum.DROP_MOTIVATION_COMMAND);
-        }
+    public void appendText(TextEntryType type, String text) {
+        entries.get(type).append(text);
     }
 
-    public void appendVacancy(String text) {
-        vacancy.append(text);
+    public void completeTextEntry(TextEntryType type) {
+        entries.get(type).complete(type.getCommandLength());
     }
 
-    public void resetVacancy() {
-        vacancy.reset();
+    public String writeMessage(TextEntryType type) {
+        return entries.get(type).getWriteMessage();
     }
 
-    public void completeVacancy() {
-        // Remove the last 7 characters ("/end_rd") from the buffer
-        vacancy.complete(7);
-    }
-
-    public void completeMotivation() {
-        // Remove the last 6 characters ("/end_m") from the buffer
-        motivation.complete(6);
-    }
-
-    public String returnMessage() {
-        return "message";
-    }
-
-    public String writeMotivationMessage() {
-        return "Please provide your motivation.";
-    }
-
-    public String continueMotivationMessage() {
-        if (motivation.complete) {
-            return "You motivation is complete. You are just adding the new version now. You can drop it or write more text and/or submit your new motivation.";
-        }
-        return "Please add more text or submit your motivation.";
+    public String continueMessage(TextEntryType type) {
+        return entries.get(type).getContinueMessage();
     }
 
     public String startingMessage() {
         return STARTING_MESSAGE;
     }
 
-    public String restartingMessage() {
-        return "You can start writing a new motivation letter or role description.";
+    public String menuMessage() {
+        var menuMessage = new StringBuffer(MENU_MESSAGE);
+        entries.values().forEach(entry -> {
+            if (!entry.isComplete()) {
+                menuMessage.append(entry.getMenuMessage());
+            }
+        });
+        return menuMessage.toString();
     }
 
     public List<InlineKeyboardRow> startKeyboard() {
         return inlineKeyboards.getStartKeyboard();
     }
 
-    public List<InlineKeyboardRow> emptyKeyboard() {
-        return inlineKeyboards.getEmptyKeyboard();
-    }
-
-    public List<InlineKeyboardRow> motivationKeyboard() {
-        if (motivation.isTextEmpty()) {
-            return inlineKeyboards.getEmptyMotivationKeyboard();
+    public List<InlineKeyboardRow> menuKeyboard() {
+        var keyboard = inlineKeyboards.getMenuKeyboard(entries.values());
+        if (entries.get(VACANCY_TEXT_ENTRY).isComplete()) {
+            keyboard.add(GENERATE_ROW.getRow());
         }
-        return inlineKeyboards.getCompletedMotivationKeyboard();
+        return keyboard;
     }
 
-    public List<InlineKeyboardRow> continueMotivationKeyboard() {
-        return inlineKeyboards.getContinueMotivationKeyboard();
+    public List<InlineKeyboardRow> writingKeyboard() {
+        return inlineKeyboards.getReturnMenuKeyboard();
+    }
+
+    public List<InlineKeyboardRow> continueKeyboard(TextEntryType type) {
+        return inlineKeyboards.getContinueKeyboard(entries.get(type));
     }
 
     public boolean isMotivationOnWork() {
-        return motivation.isOnWork();
+        return entries.get(TextEntryType.MOTIVATION_TEXT_ENTRY).isOnWork();
     }
 
     public void addMotivationText(String text) {
-        motivation.append(text);
+        entries.get(TextEntryType.MOTIVATION_TEXT_ENTRY).append(text);
         menuState.add(CommandsEnum.SUBMIT_MOTIVATION_COMMAND);
     }
 }
