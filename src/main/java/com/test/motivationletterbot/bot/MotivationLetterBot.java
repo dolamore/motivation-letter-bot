@@ -34,10 +34,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.test.motivationletterbot.constants.MessageConstants.*;
-import static com.test.motivationletterbot.entity.TextEntryType.MOTIVATION_TEXT_ENTRY;
+import static com.test.motivationletterbot.entity.textentry.TextEntryType.ADDITIONAL_INFORMATION_TEXT_ENTRY;
+import static com.test.motivationletterbot.entity.textentry.TextEntryType.MOTIVATION_TEXT_ENTRY;
 
 import org.telegram.telegrambots.abilitybots.api.db.DBContext;
 import org.telegram.telegrambots.abilitybots.api.db.MapDBContext;
+
+import com.test.motivationletterbot.entity.textentry.TextEntryType;
 
 @Slf4j
 @Component
@@ -89,12 +92,17 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         super.consume(update);
 
         Optional.ofNullable(update.getMessage()).ifPresent(message -> {
-            if (session.isMotivationOnWork() && !BotUtils.isCommand(message)) {
-                session.addText(MOTIVATION_TEXT_ENTRY, message.getText());
-                getAbilities().get("cont_m").action().accept(ctx);
+            if (BotUtils.isCommand(message)) {
+                return;
+            }
 
-                log.warn(session.getEntries().get(MOTIVATION_TEXT_ENTRY).getText().toString());
-                log.warn(session.getEntries().get(MOTIVATION_TEXT_ENTRY).getFinalText());
+            for (var type : TextEntryType.values()) {
+                if (session.isOnWork(type)) {
+                    session.addText(type, message.getText());
+                    String abilityKey = type.getContinueAbilityKey();
+                    getAbilities().get(abilityKey).action().accept(ctx);
+                    break;
+                }
             }
         });
 

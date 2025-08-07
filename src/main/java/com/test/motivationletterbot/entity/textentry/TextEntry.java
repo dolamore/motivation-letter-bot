@@ -1,4 +1,4 @@
-package com.test.motivationletterbot.entity;
+package com.test.motivationletterbot.entity.textentry;
 
 import com.test.motivationletterbot.entity.commands.CommandsEnum;
 import lombok.Getter;

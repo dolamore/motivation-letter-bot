@@ -2,6 +2,8 @@ package com.test.motivationletterbot.entity;
 
 import com.test.motivationletterbot.entity.commands.CommandsEnum;
 import com.test.motivationletterbot.entity.keyboard.InlineKeyboards;
+import com.test.motivationletterbot.entity.textentry.TextEntry;
+import com.test.motivationletterbot.entity.textentry.TextEntryType;
 import lombok.Getter;
 import lombok.Setter;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
@@ -13,7 +15,7 @@ import java.util.List;
 
 import static com.test.motivationletterbot.constants.MessageConstants.MENU_MESSAGE;
 import static com.test.motivationletterbot.constants.MessageConstants.STARTING_MESSAGE;
-import static com.test.motivationletterbot.entity.TextEntryType.VACANCY_TEXT_ENTRY;
+import static com.test.motivationletterbot.entity.textentry.TextEntryType.VACANCY_TEXT_ENTRY;
 import static com.test.motivationletterbot.entity.commands.BotMenuStateEnum.*;
 import static com.test.motivationletterbot.entity.keyboard.KeyboardRowEnum.GENERATE_ROW;
 
@@ -125,8 +127,8 @@ public class UserSession {
         return inlineKeyboards.getContinueKeyboard(entries.get(type));
     }
 
-    public boolean isMotivationOnWork() {
-        return entries.get(TextEntryType.MOTIVATION_TEXT_ENTRY).isOnWork();
+    public boolean isOnWork(TextEntryType type) {
+        return entries.get(type).isOnWork();
     }
 
     public void addText(TextEntryType type, String text) {
