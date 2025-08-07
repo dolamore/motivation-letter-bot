@@ -39,18 +39,11 @@ public class TextEntry {
         }
     }
 
-    public void complete(int lengthToRemove) {
-        var len = text.length();
-        text.delete(len - lengthToRemove, len);
-
+    public void complete() {
         finalText = text.toString();
 
         complete = true;
         onWork = false;
-    }
-
-    public boolean isTextEmpty() {
-        return text.isEmpty();
     }
 
     public void addButtonIfNotCompleted(EnumSet<CommandsEnum> commands) {
