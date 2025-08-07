@@ -56,7 +56,11 @@ public class TextEntry {
     }
 
     public String getWriteMessage() {
-        return type.getWriteMessage();
+        if (isComplete()) {
+            return type.getWriteCompletedMessage();
+        } else {
+            return type.getWriteMessage();
+        }
     }
 
     public String getContinueMessage() {

@@ -3,7 +3,6 @@ package com.test.motivationletterbot.bot;
 import com.test.motivationletterbot.entity.*;
 import com.test.motivationletterbot.entity.ability.Abilities;
 import com.test.motivationletterbot.entity.commands.CommandService;
-import com.test.motivationletterbot.entity.keyboard.InlineKeyboards;
 import com.test.motivationletterbot.kafka.KafkaProducer;
 import com.test.motivationletterbot.kafka.KafkaRequest;
 import com.test.motivationletterbot.util.BotUtils;
@@ -95,6 +94,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
                 getAbilities().get("cont_m").action().accept(ctx);
 
                 log.warn(session.getEntries().get(MOTIVATION_TEXT_ENTRY).getText().toString());
+                log.warn(session.getEntries().get(MOTIVATION_TEXT_ENTRY).getFinalText());
             }
         });
 
