@@ -79,10 +79,6 @@ public class UserSession {
         menuState.add(entry.getSubmitCommand());
     }
 
-    public void appendText(TextEntryType type, String text) {
-        entries.get(type).append(text);
-    }
-
     public void completeTextEntry(TextEntryType type) {
         entries.get(type).complete();
     }
@@ -133,8 +129,8 @@ public class UserSession {
         return entries.get(TextEntryType.MOTIVATION_TEXT_ENTRY).isOnWork();
     }
 
-    public void addMotivationText(String text) {
-        entries.get(TextEntryType.MOTIVATION_TEXT_ENTRY).append(text);
-        menuState.add(CommandsEnum.SUBMIT_MOTIVATION_COMMAND);
+    public void addText(TextEntryType type, String text) {
+        entries.get(type).append(text);
+        menuState.add(type.getSubmitCommand());
     }
 }

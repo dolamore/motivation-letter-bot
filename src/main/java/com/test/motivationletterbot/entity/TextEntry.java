@@ -3,7 +3,6 @@ package com.test.motivationletterbot.entity;
 import com.test.motivationletterbot.entity.commands.CommandsEnum;
 import lombok.Getter;
 import lombok.Setter;
-import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
 import java.util.EnumSet;
