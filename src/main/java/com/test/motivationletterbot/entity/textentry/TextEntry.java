@@ -47,9 +47,15 @@ public class TextEntry {
         onWork = false;
     }
 
+    public boolean isBufferEmpty() {
+        return text.isEmpty();
+    }
+
     public void addButtonIfNotCompleted(EnumSet<CommandsEnum> commands) {
         if (!isComplete()) {
             commands.add(type.getMainMenuCommand());
+        } else {
+            commands.add(type.getRewriteCommand());
         }
     }
 
