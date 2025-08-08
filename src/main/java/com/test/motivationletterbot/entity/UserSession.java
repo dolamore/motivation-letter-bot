@@ -95,13 +95,30 @@ public class UserSession {
     }
 
     public String menuMessage() {
-        var menuMessage = new StringBuffer(MENU_MESSAGE);
+        StringBuffer menuMessage = new StringBuffer();
+        if (isAllComplete()) {
+            menuMessage.append(FULLY_COMPLETED_MENU_MESSAGE);
+            return menuMessage.toString();
+        }
+        if (isAllMandatoryComplete()) {
+            menuMessage.append(COMPLETED_MENU_MESSAGE);
+        } else {
+            menuMessage.append(MENU_MESSAGE);
+        }
         entries.values().forEach(entry -> {
             if (!entry.isComplete()) {
                 menuMessage.append(entry.getMenuMessage());
             }
         });
         return menuMessage.toString();
+    }
+
+    private boolean isAllMandatoryComplete() {
+        return entries.values().stream().filter(TextEntry::isMandatory).allMatch(TextEntry::isComplete);
+    }
+
+    private boolean isAllComplete() {
+        return entries.values().stream().allMatch(TextEntry::isComplete);
     }
 
     public List<InlineKeyboardRow> startKeyboard() {
