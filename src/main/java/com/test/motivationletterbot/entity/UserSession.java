@@ -37,7 +37,6 @@ public class UserSession {
     private boolean lastMessageHadKeyboard = false;
 
     private EnumSet<CommandsEnum> menuState = START_MENU_STATE.getStateCommands();
-    private final ReentrantLock lock = new ReentrantLock();
 
     public UserSession() {
         for (TextEntryType type : TextEntryType.values()) {
@@ -62,96 +61,61 @@ public class UserSession {
     }
 
     public void startSession() {
-        lock.lock();
-        try {
-            menuState.clear();
-            menuState.addAll(MAIN_MENU_STATE.getStateCommands());
-            entries.values().forEach(TextEntry::reset);
-            entries.values().forEach(entry -> entry.addButtonIfNotCompleted(menuState));
-        } finally {
-            lock.unlock();
-        }
+        menuState.clear();
+        menuState.addAll(MAIN_MENU_STATE.getStateCommands());
+        entries.values().forEach(TextEntry::reset);
+        entries.values().forEach(entry -> entry.addButtonIfNotCompleted(menuState));
     }
 
     public void returnToMenu() {
-        lock.lock();
-        try {
-            entries.values().forEach(entry -> entry.setOnWork(false));
-            menuState.clear();
-            menuState.addAll(MAIN_MENU_STATE.getStateCommands());
-            entries.values().forEach(entry -> entry.addButtonIfNotCompleted(menuState));
-        } finally {
-            lock.unlock();
-        }
+        entries.values().forEach(entry -> entry.setOnWork(false));
+        menuState.clear();
+        menuState.addAll(MAIN_MENU_STATE.getStateCommands());
+        entries.values().forEach(entry -> entry.addButtonIfNotCompleted(menuState));
     }
 
     public void startWriting(TextEntryType textEntryType) {
-        lock.lock();
-        try {
-            entries.values().forEach(entry -> entry.setOnWork(false));
-            var entry = entries.get(textEntryType);
-            entry.startWriting();
-            menuState.clear();
-            menuState.addAll(MAIN_MENU_STATE.getStateCommands());
-            entries.values().stream().filter(e -> !e.isOnWork()).forEach(e -> e.addButtonIfNotCompleted(menuState));
-        } finally {
-            lock.unlock();
-        }
+        entries.values().forEach(entry -> entry.setOnWork(false));
+        var entry = entries.get(textEntryType);
+        entry.startWriting();
+        menuState.clear();
+        menuState.addAll(MAIN_MENU_STATE.getStateCommands());
+        entries.values().stream().filter(e -> !e.isOnWork()).forEach(e -> e.addButtonIfNotCompleted(menuState));
     }
 
     public void continueWriting() {
-        lock.lock();
-        try {
-            var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().orElse(null);
-            if (entry == null) {
-                return;
-            }
-            menuState.clear();
-            menuState.addAll(MAIN_MENU_STATE.getStateCommands());
-            menuState.add(SUBMIT_COMMAND);
-            entries.values().forEach(e -> e.addButtonIfNotCompleted(menuState));
-        } finally {
-            lock.unlock();
+        var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().orElse(null);
+        if (entry == null) {
+            return;
         }
+        menuState.clear();
+        menuState.addAll(MAIN_MENU_STATE.getStateCommands());
+        menuState.add(SUBMIT_COMMAND);
+        entries.values().forEach(e -> e.addButtonIfNotCompleted(menuState));
     }
 
     public void completeTextEntry() {
-        lock.lock();
-        try {
-            var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().orElse(null);
-            if (entry == null) {
-                return;
-            }
-            entry.complete();
-            menuState.clear();
-            menuState.addAll(MAIN_MENU_STATE.getStateCommands());
-            entries.values().forEach(e -> e.addButtonIfNotCompleted(menuState));
-        } finally {
-            lock.unlock();
+        var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().orElse(null);
+        if (entry == null) {
+            return;
         }
+        entry.complete();
+        menuState.clear();
+        menuState.addAll(MAIN_MENU_STATE.getStateCommands());
+        entries.values().forEach(e -> e.addButtonIfNotCompleted(menuState));
     }
 
     public String writeMessage() {
-        lock.lock();
-        try {
-            var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().get();
-            return entry.getWriteMessage();
-        } finally {
-            lock.unlock();
-        }
+        var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().get();
+        return entry.getWriteMessage();
     }
 
     public String continueMessage() {
-        lock.lock();
-        try {
-            var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().orElse(null);
-            if (entry == null) {
-                return "This command is not available at the moment.";
-            }
-            return entry.getContinueMessage();
-        } finally {
-            lock.unlock();
+        var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().orElse(null);
+        if (entry == null) {
+            return "This command is not available at the moment.";
         }
+        return entry.getContinueMessage();
     }
 
     public String startingMessage() {
@@ -159,45 +123,30 @@ public class UserSession {
     }
 
     public String menuMessage() {
-        lock.lock();
-        try {
-            StringBuffer menuMessage = new StringBuffer();
-            if (isAllComplete()) {
-                menuMessage.append(FULLY_COMPLETED_MENU_MESSAGE);
-                return menuMessage.toString();
-            }
-            if (isAllMandatoryComplete()) {
-                menuMessage.append(COMPLETED_MENU_MESSAGE);
-            } else {
-                menuMessage.append(MENU_MESSAGE);
-            }
-            entries.values().forEach(entry -> {
-                if (!entry.isComplete()) {
-                    menuMessage.append(entry.getMenuMessage());
-                }
-            });
+        StringBuffer menuMessage = new StringBuffer();
+        if (isAllComplete()) {
+            menuMessage.append(FULLY_COMPLETED_MENU_MESSAGE);
             return menuMessage.toString();
-        } finally {
-            lock.unlock();
         }
+        if (isAllMandatoryComplete()) {
+            menuMessage.append(COMPLETED_MENU_MESSAGE);
+        } else {
+            menuMessage.append(MENU_MESSAGE);
+        }
+        entries.values().forEach(entry -> {
+            if (!entry.isComplete()) {
+                menuMessage.append(entry.getMenuMessage());
+            }
+        });
+        return menuMessage.toString();
     }
 
     private boolean isAllMandatoryComplete() {
-        lock.lock();
-        try {
-            return entries.values().stream().filter(TextEntry::isMandatory).allMatch(TextEntry::isComplete);
-        } finally {
-            lock.unlock();
-        }
+        return entries.values().stream().filter(TextEntry::isMandatory).allMatch(TextEntry::isComplete);
     }
 
     private boolean isAllComplete() {
-        lock.lock();
-        try {
-            return entries.values().stream().allMatch(TextEntry::isComplete);
-        } finally {
-            lock.unlock();
-        }
+        return entries.values().stream().allMatch(TextEntry::isComplete);
     }
 
     public List<InlineKeyboardRow> startKeyboard() {
@@ -229,22 +178,12 @@ public class UserSession {
     }
 
     public boolean isOnWork(TextEntryType type) {
-        lock.lock();
-        try {
-            return entries.get(type).isOnWork();
-        } finally {
-            lock.unlock();
-        }
+        return entries.get(type).isOnWork();
     }
 
     public void addText(TextEntryType type, String text) {
-        lock.lock();
-        try {
-            entries.get(type).append(text);
-            menuState.add(SUBMIT_COMMAND);
-        } finally {
-            lock.unlock();
-        }
+        entries.get(type).append(text);
+        menuState.add(SUBMIT_COMMAND);
     }
 
     public String greetingMessage() {
