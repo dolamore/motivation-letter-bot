@@ -21,7 +21,7 @@ public enum AbilitiesEnum {
     ),
     RESTART_ABILITY(
             new AbilityMeta(RESTART_COMMAND),
-            AbilityBehavior.createStartBehavior()
+            AbilityBehavior.createRestartBehavior()
     ),
     MENU_ABILITY(
             new AbilityMeta(MENU_COMMAND),
