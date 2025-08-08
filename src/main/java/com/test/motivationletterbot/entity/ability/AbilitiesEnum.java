@@ -33,41 +33,23 @@ public enum AbilitiesEnum {
             new AbilityMeta(WRITE_MOTIVATION_COMMAND),
             AbilityBehavior.createWriteBehavior(MOTIVATION_TEXT_ENTRY)
     ),
-    CONTINUE_MOTIVATION_ABILITY(
-            new AbilityMeta(CONTINUE_MOTIVATION_COMMAND),
-            AbilityBehavior.createContinueBehavior(MOTIVATION_TEXT_ENTRY)
-    ),
-    RECORD_MOTIVATION_ABILITY(
-            new AbilityMeta(SUBMIT_MOTIVATION_COMMAND),
-            AbilityBehavior.createRecordBehavior(MOTIVATION_TEXT_ENTRY)
-    ),
-
-
     WRITE_ROLE_DESCRIPTION_ABILITY(
             new AbilityMeta(WRITE_ROLE_DESCRIPTION_COMMAND),
             AbilityBehavior.createWriteBehavior(VACANCY_TEXT_ENTRY)
     ),
-    CONTINUE_ROLE_DESCRIPTION_ABILITY(
-            new AbilityMeta(CONTINUE_ROLE_DESCRIPTION_COMMAND),
-            AbilityBehavior.createContinueBehavior(VACANCY_TEXT_ENTRY)
-    ),
-    RECORD_ROLE_DESCRIPTION_ABILITY(
-            new AbilityMeta(SUBMIT_ROLE_DESCRIPTION_COMMAND),
-            AbilityBehavior.createRecordBehavior(VACANCY_TEXT_ENTRY)
-    ),
-
-
     WRITE_ADDITIONAL_INFORMATION_ABILITY(
             new AbilityMeta(WRITE_ADDITIONAL_INFORMATION_COMMAND),
             AbilityBehavior.createWriteBehavior(ADDITIONAL_INFORMATION_TEXT_ENTRY)
     ),
-    CONTINUE_ADDITIONAL_INFORMATION_ABILITY(
-            new AbilityMeta(CONTINUE_ADDITIONAL_INFORMATION_COMMAND),
-            AbilityBehavior.createContinueBehavior(ADDITIONAL_INFORMATION_TEXT_ENTRY)
+
+
+    CONTINUE_ABILITY(
+            new AbilityMeta(CONTINUE_COMMAND),
+            AbilityBehavior.createContinueBehavior()
     ),
-    RECORD_ADDITIONAL_INFORMATION_ABILITY(
-            new AbilityMeta(SUBMIT_ADDITIONAL_INFORMATION_COMMAND),
-            AbilityBehavior.createRecordBehavior(ADDITIONAL_INFORMATION_TEXT_ENTRY)
+    RECORD_TEXT_ENTRY_ABILITY(
+            new AbilityMeta(SUBMIT_COMMAND),
+            AbilityBehavior.createRecordBehavior()
     );
 
 

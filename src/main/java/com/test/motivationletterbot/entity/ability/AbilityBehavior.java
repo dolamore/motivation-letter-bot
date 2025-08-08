@@ -17,22 +17,22 @@ public record AbilityBehavior(
     public static AbilityBehavior createWriteBehavior(TextEntryType type) {
         return new AbilityBehavior(
                 (session) -> session.startWriting(type),
-                (session) -> session.writeMessage(type),
+                UserSession::writeMessage,
                 UserSession::writingKeyboard
         );
     }
 
-    public static AbilityBehavior createContinueBehavior(TextEntryType type) {
+    public static AbilityBehavior createContinueBehavior() {
         return new AbilityBehavior(
-                (session) -> session.continueWriting(type),
-                (session) -> session.continueMessage(type),
-                (session) -> session.continueKeyboard(type)
+                UserSession::continueWriting,
+                UserSession::continueMessage,
+                UserSession::continueKeyboard
         );
     }
 
-    public static AbilityBehavior createRecordBehavior(TextEntryType type) {
+    public static AbilityBehavior createRecordBehavior() {
         return new AbilityBehavior(
-                (session) -> session.completeTextEntry(type),
+                UserSession::completeTextEntry,
                 UserSession::menuMessage,
                 UserSession::menuKeyboard
         );

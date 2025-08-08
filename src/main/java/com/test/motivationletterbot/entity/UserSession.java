@@ -19,6 +19,7 @@ import static com.test.motivationletterbot.constants.MessageConstants.*;
 import static com.test.motivationletterbot.entity.textentry.TextEntryType.VACANCY_TEXT_ENTRY;
 import static com.test.motivationletterbot.entity.commands.BotMenuStateEnum.*;
 import static com.test.motivationletterbot.entity.keyboard.KeyboardRowEnum.GENERATE_ROW;
+import static com.test.motivationletterbot.entity.commands.CommandsEnum.*;
 
 @Getter
 @Setter
@@ -98,44 +99,56 @@ public class UserSession {
         }
     }
 
-    public void continueWriting(TextEntryType textEntryType) {
+    public void continueWriting() {
         lock.lock();
         try {
-            var entry = entries.get(textEntryType);
+            var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().orElse(null);
+            if (entry == null) {
+                return;
+            }
             menuState.clear();
             menuState.addAll(MAIN_MENU_STATE.getStateCommands());
-            menuState.add(entry.getSubmitCommand());
+            menuState.add(SUBMIT_COMMAND);
             entries.values().forEach(e -> e.addButtonIfNotCompleted(menuState));
         } finally {
             lock.unlock();
         }
     }
 
-    public void completeTextEntry(TextEntryType type) {
+    public void completeTextEntry() {
         lock.lock();
         try {
-            entries.get(type).complete();
+            var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().orElse(null);
+            if (entry == null) {
+                return;
+            }
+            entry.complete();
             menuState.clear();
             menuState.addAll(MAIN_MENU_STATE.getStateCommands());
-            entries.values().forEach(entry -> entry.addButtonIfNotCompleted(menuState));
+            entries.values().forEach(e -> e.addButtonIfNotCompleted(menuState));
         } finally {
             lock.unlock();
         }
     }
 
-    public String writeMessage(TextEntryType type) {
+    public String writeMessage() {
         lock.lock();
         try {
-            return entries.get(type).getWriteMessage();
+            var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().get();
+            return entry.getWriteMessage();
         } finally {
             lock.unlock();
         }
     }
 
-    public String continueMessage(TextEntryType type) {
+    public String continueMessage() {
         lock.lock();
         try {
-            return entries.get(type).getContinueMessage();
+            var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().orElse(null);
+            if (entry == null) {
+                return "This command is not available at the moment.";
+            }
+            return entry.getContinueMessage();
         } finally {
             lock.unlock();
         }
@@ -207,8 +220,12 @@ public class UserSession {
         return inlineKeyboards.getReturnMenuKeyboard();
     }
 
-    public List<InlineKeyboardRow> continueKeyboard(TextEntryType type) {
-        return inlineKeyboards.getContinueKeyboard(entries.get(type));
+    public List<InlineKeyboardRow> continueKeyboard() {
+        var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().orElse(null);
+        if (entry == null) {
+            return inlineKeyboards.getReturnMenuKeyboard();
+        }
+        return inlineKeyboards.getContinueKeyboard();
     }
 
     public boolean isOnWork(TextEntryType type) {
@@ -224,7 +241,7 @@ public class UserSession {
         lock.lock();
         try {
             entries.get(type).append(text);
-            menuState.add(type.getSubmitCommand());
+            menuState.add(SUBMIT_COMMAND);
         } finally {
             lock.unlock();
         }

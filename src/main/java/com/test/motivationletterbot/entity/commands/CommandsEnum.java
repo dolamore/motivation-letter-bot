@@ -12,18 +12,15 @@ public enum CommandsEnum {
 
     WRITE_ROLE_DESCRIPTION_COMMAND("/write_rd", "Write role description"),
     REWRITE_ROLE_DESCRIPTION_COMMAND("/write_rd", "Rewrite role description"),
-    CONTINUE_ROLE_DESCRIPTION_COMMAND("/cont_rd", "Continue writing role description"),
-    SUBMIT_ROLE_DESCRIPTION_COMMAND("/submit_rd", "Submit role description"),
 
     WRITE_MOTIVATION_COMMAND("/write_m", "Write motivation"),
     REWRITE_MOTIVATION_COMMAND("/write_m", "Rewrite motivation"),
-    CONTINUE_MOTIVATION_COMMAND("/cont_m", "Continue writing motivation"),
-    SUBMIT_MOTIVATION_COMMAND("/submit_m", "Submit motivation"),
 
     WRITE_ADDITIONAL_INFORMATION_COMMAND("/write_ai", "Write additional information"),
     REWRITE_ADDITIONAL_INFORMATION_COMMAND("/write_ai", "Rewrite additional information"),
-    CONTINUE_ADDITIONAL_INFORMATION_COMMAND("/cont_ai", "Continue writing additional information"),
-    SUBMIT_ADDITIONAL_INFORMATION_COMMAND("/submit_ai", "Submit additional information");
+
+    CONTINUE_COMMAND("/cont", "Continue writing"),
+    SUBMIT_COMMAND("/submit", "Submit");
 
 
     private final BotCommand botCommand;

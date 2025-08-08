@@ -60,38 +60,21 @@ public class Abilities implements AbilityExtension {
         return getAbility(WRITE_MOTIVATION_ABILITY).get();
     }
 
-    public Ability continueMotivationWriting() {
-        return getAbility(CONTINUE_MOTIVATION_ABILITY).get();
-    }
-
-    public Ability recordMotivation() {
-        return getAbility(RECORD_MOTIVATION_ABILITY).get();
-    }
-
-
     public Ability writeRoleDescription() {
         return getAbility(WRITE_ROLE_DESCRIPTION_ABILITY).get();
     }
-
-    public Ability continueRoleDescriptionWriting() {
-        return getAbility(CONTINUE_ROLE_DESCRIPTION_ABILITY).get();
-    }
-
-    public Ability recordRoleDescription() {
-        return getAbility(RECORD_ROLE_DESCRIPTION_ABILITY).get();
-    }
-
 
     public Ability writeAdditionalInformation() {
         return getAbility(WRITE_ADDITIONAL_INFORMATION_ABILITY).get();
     }
 
-    public Ability continueAdditionalInformationWriting() {
-        return getAbility(CONTINUE_ADDITIONAL_INFORMATION_ABILITY).get();
+
+    public Ability recordTextEntry() {
+        return getAbility(RECORD_TEXT_ENTRY_ABILITY).get();
     }
 
-    public Ability recordAdditionalInformation() {
-        return getAbility(RECORD_ADDITIONAL_INFORMATION_ABILITY).get();
+    public Ability continueWriting() {
+        return getAbility(CONTINUE_ABILITY).get();
     }
 
 
@@ -105,7 +88,6 @@ public class Abilities implements AbilityExtension {
                     long chatId = ctx.chatId();
                     UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
                     state.getSessionAction().accept(session);
-                    log.warn("User session: {}", session.getBotCommands().toString());
                     commandService.setBotCommands(chatId, session.getBotCommands());
 
                     SendMessage sendMessage = SendMessage.builder()
