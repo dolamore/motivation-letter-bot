@@ -54,4 +54,12 @@ public record AbilityBehavior(
                 UserSession::startKeyboard
         );
     }
+
+    public static AbilityBehavior createMenuBehavior() {
+        return new AbilityBehavior(
+                UserSession::returnToMenu,
+                UserSession::menuMessage,
+                UserSession::menuKeyboard
+        );
+    }
 }

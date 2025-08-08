@@ -25,11 +25,7 @@ public enum AbilitiesEnum {
     ),
     MENU_ABILITY(
             new AbilityMeta(MENU_COMMAND),
-            new AbilityBehavior(
-                    UserSession::returnToMenu,
-                    UserSession::menuMessage,
-                    UserSession::menuKeyboard
-            )
+            AbilityBehavior.createMenuBehavior()
     ),
 
 
