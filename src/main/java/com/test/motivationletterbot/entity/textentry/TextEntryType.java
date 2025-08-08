@@ -134,6 +134,10 @@ public enum TextEntryType {
         return params.continueAbilityKey();
     }
 
+    public boolean isMandatory() {
+        return params.isMandatory();
+    }
+
     public abstract CommandsEnum getMainMenuCommand();
 
     public abstract String getMenuMessage();

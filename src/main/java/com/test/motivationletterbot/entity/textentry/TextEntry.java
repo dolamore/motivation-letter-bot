@@ -11,6 +11,7 @@ import java.util.EnumSet;
 @Setter
 public class TextEntry {
     private final StringBuffer text = new StringBuffer();
+    private final boolean isMandatory;
     private String finalText;
     private boolean onWork = false;
     private boolean complete = false;
@@ -18,6 +19,7 @@ public class TextEntry {
 
     public TextEntry(TextEntryType type) {
         this.type = type;
+        this.isMandatory = type.isMandatory();
     }
 
     public void reset() {
