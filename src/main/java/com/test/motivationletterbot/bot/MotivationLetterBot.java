@@ -34,8 +34,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.test.motivationletterbot.constants.MessageConstants.*;
-import static com.test.motivationletterbot.entity.textentry.TextEntryType.ADDITIONAL_INFORMATION_TEXT_ENTRY;
-import static com.test.motivationletterbot.entity.textentry.TextEntryType.MOTIVATION_TEXT_ENTRY;
 
 import org.telegram.telegrambots.abilitybots.api.db.DBContext;
 import org.telegram.telegrambots.abilitybots.api.db.MapDBContext;
