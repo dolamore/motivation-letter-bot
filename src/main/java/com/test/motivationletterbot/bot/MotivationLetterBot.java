@@ -93,12 +93,18 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
             if (BotUtils.isCommand(message)) {
                 return;
             }
+            boolean found = false;
             for (var type : TextEntryType.values()) {
                 if (session.isOnWork(type)) {
                     session.addText(type, message.getText());
                     getAbilities().get("cont").action().accept(ctx);
+                    found = true;
                     break;
                 }
+            }
+            
+            if (!found) {
+                getAbilities().get("menu").action().accept(ctx);
             }
         });
 
