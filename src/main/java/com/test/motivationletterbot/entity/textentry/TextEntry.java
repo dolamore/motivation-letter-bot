@@ -12,7 +12,7 @@ import java.util.EnumSet;
 public class TextEntry {
     private final StringBuffer text = new StringBuffer();
     private final boolean isMandatory;
-    private String finalText;
+    private String finalText = "";
     private boolean onWork = false;
     private boolean complete = false;
     private final TextEntryType type;
