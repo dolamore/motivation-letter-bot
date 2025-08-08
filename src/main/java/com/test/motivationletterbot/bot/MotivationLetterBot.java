@@ -102,7 +102,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
                     break;
                 }
             }
-            
+
             if (!found) {
                 getAbilities().get("menu").action().accept(ctx);
             }
