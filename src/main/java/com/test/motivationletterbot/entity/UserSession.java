@@ -6,12 +6,14 @@ import com.test.motivationletterbot.entity.textentry.TextEntry;
 import com.test.motivationletterbot.entity.textentry.TextEntryType;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.test.motivationletterbot.constants.MessageConstants.*;
 import static com.test.motivationletterbot.entity.textentry.TextEntryType.VACANCY_TEXT_ENTRY;
@@ -20,6 +22,7 @@ import static com.test.motivationletterbot.entity.keyboard.KeyboardRowEnum.GENER
 
 @Getter
 @Setter
+@Slf4j
 public class UserSession {
     @Setter
     private static InlineKeyboards inlineKeyboards;
@@ -33,6 +36,7 @@ public class UserSession {
     private boolean lastMessageHadKeyboard = false;
 
     private EnumSet<CommandsEnum> menuState = START_MENU_STATE.getStateCommands();
+    private final ReentrantLock lock = new ReentrantLock();
 
     public UserSession() {
         for (TextEntryType type : TextEntryType.values()) {
@@ -57,37 +61,84 @@ public class UserSession {
     }
 
     public void startSession() {
-        menuState = START_MENU_STATE.getStateCommands();
-        entries.values().forEach(TextEntry::reset);
-        entries.values().forEach(entry -> entry.addButtonIfNotCompleted(menuState));
+        lock.lock();
+        try {
+            menuState.clear();
+            menuState.addAll(MAIN_MENU_STATE.getStateCommands());
+            entries.values().forEach(TextEntry::reset);
+            entries.values().forEach(entry -> entry.addButtonIfNotCompleted(menuState));
+        } finally {
+            lock.unlock();
+        }
     }
 
     public void returnToMenu() {
-        menuState = MAIN_MENU_STATE.getStateCommands();
-        entries.values().forEach(entry -> entry.addButtonIfNotCompleted(menuState));
+        lock.lock();
+        try {
+            entries.values().forEach(entry -> entry.setOnWork(false));
+            menuState.clear();
+            menuState.addAll(MAIN_MENU_STATE.getStateCommands());
+            entries.values().forEach(entry -> entry.addButtonIfNotCompleted(menuState));
+        } finally {
+            lock.unlock();
+        }
     }
 
     public void startWriting(TextEntryType textEntryType) {
-        var entry = entries.get(textEntryType);
-        entry.startWriting();
-        //menuState = entry.getStateCommands();
+        lock.lock();
+        try {
+            entries.values().forEach(entry -> entry.setOnWork(false));
+            var entry = entries.get(textEntryType);
+            entry.startWriting();
+            menuState.clear();
+            menuState.addAll(MAIN_MENU_STATE.getStateCommands());
+            entries.values().stream().filter(e -> !e.isOnWork()).forEach(e -> e.addButtonIfNotCompleted(menuState));
+        } finally {
+            lock.unlock();
+        }
     }
 
     public void continueWriting(TextEntryType textEntryType) {
-        var entry = entries.get(textEntryType);
-        menuState.add(entry.getSubmitCommand());
+        lock.lock();
+        try {
+            var entry = entries.get(textEntryType);
+            menuState.clear();
+            menuState.addAll(MAIN_MENU_STATE.getStateCommands());
+            menuState.add(entry.getSubmitCommand());
+            entries.values().forEach(e -> e.addButtonIfNotCompleted(menuState));
+        } finally {
+            lock.unlock();
+        }
     }
 
     public void completeTextEntry(TextEntryType type) {
-        entries.get(type).complete();
+        lock.lock();
+        try {
+            entries.get(type).complete();
+            menuState.clear();
+            menuState.addAll(MAIN_MENU_STATE.getStateCommands());
+            entries.values().forEach(entry -> entry.addButtonIfNotCompleted(menuState));
+        } finally {
+            lock.unlock();
+        }
     }
 
     public String writeMessage(TextEntryType type) {
-        return entries.get(type).getWriteMessage();
+        lock.lock();
+        try {
+            return entries.get(type).getWriteMessage();
+        } finally {
+            lock.unlock();
+        }
     }
 
     public String continueMessage(TextEntryType type) {
-        return entries.get(type).getContinueMessage();
+        lock.lock();
+        try {
+            return entries.get(type).getContinueMessage();
+        } finally {
+            lock.unlock();
+        }
     }
 
     public String startingMessage() {
@@ -95,30 +146,45 @@ public class UserSession {
     }
 
     public String menuMessage() {
-        StringBuffer menuMessage = new StringBuffer();
-        if (isAllComplete()) {
-            menuMessage.append(FULLY_COMPLETED_MENU_MESSAGE);
-            return menuMessage.toString();
-        }
-        if (isAllMandatoryComplete()) {
-            menuMessage.append(COMPLETED_MENU_MESSAGE);
-        } else {
-            menuMessage.append(MENU_MESSAGE);
-        }
-        entries.values().forEach(entry -> {
-            if (!entry.isComplete()) {
-                menuMessage.append(entry.getMenuMessage());
+        lock.lock();
+        try {
+            StringBuffer menuMessage = new StringBuffer();
+            if (isAllComplete()) {
+                menuMessage.append(FULLY_COMPLETED_MENU_MESSAGE);
+                return menuMessage.toString();
             }
-        });
-        return menuMessage.toString();
+            if (isAllMandatoryComplete()) {
+                menuMessage.append(COMPLETED_MENU_MESSAGE);
+            } else {
+                menuMessage.append(MENU_MESSAGE);
+            }
+            entries.values().forEach(entry -> {
+                if (!entry.isComplete()) {
+                    menuMessage.append(entry.getMenuMessage());
+                }
+            });
+            return menuMessage.toString();
+        } finally {
+            lock.unlock();
+        }
     }
 
     private boolean isAllMandatoryComplete() {
-        return entries.values().stream().filter(TextEntry::isMandatory).allMatch(TextEntry::isComplete);
+        lock.lock();
+        try {
+            return entries.values().stream().filter(TextEntry::isMandatory).allMatch(TextEntry::isComplete);
+        } finally {
+            lock.unlock();
+        }
     }
 
     private boolean isAllComplete() {
-        return entries.values().stream().allMatch(TextEntry::isComplete);
+        lock.lock();
+        try {
+            return entries.values().stream().allMatch(TextEntry::isComplete);
+        } finally {
+            lock.unlock();
+        }
     }
 
     public List<InlineKeyboardRow> startKeyboard() {
@@ -146,12 +212,22 @@ public class UserSession {
     }
 
     public boolean isOnWork(TextEntryType type) {
-        return entries.get(type).isOnWork();
+        lock.lock();
+        try {
+            return entries.get(type).isOnWork();
+        } finally {
+            lock.unlock();
+        }
     }
 
     public void addText(TextEntryType type, String text) {
-        entries.get(type).append(text);
-        menuState.add(type.getSubmitCommand());
+        lock.lock();
+        try {
+            entries.get(type).append(text);
+            menuState.add(type.getSubmitCommand());
+        } finally {
+            lock.unlock();
+        }
     }
 
     public String greetingMessage() {

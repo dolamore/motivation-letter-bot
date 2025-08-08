@@ -93,7 +93,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
             if (BotUtils.isCommand(message)) {
                 return;
             }
-
+            log.warn("got here???");
             for (var type : TextEntryType.values()) {
                 if (session.isOnWork(type)) {
                     session.addText(type, message.getText());

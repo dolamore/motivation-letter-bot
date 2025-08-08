@@ -44,6 +44,11 @@ public enum TextEntryType {
         public CommandsEnum getMainMenuCommand() {
             return CommandsEnum.WRITE_ROLE_DESCRIPTION_COMMAND;
         }
+
+        @Override
+        public CommandsEnum getRewriteCommand() {
+            return CommandsEnum.REWRITE_ROLE_DESCRIPTION_COMMAND;
+        }
     },
 
     MOTIVATION_TEXT_ENTRY(MOTIVATION_TEXT_ENTRY_PARAMS) {
@@ -80,6 +85,11 @@ public enum TextEntryType {
         @Override
         public CommandsEnum getMainMenuCommand() {
             return CommandsEnum.WRITE_MOTIVATION_COMMAND;
+        }
+
+        @Override
+        public CommandsEnum getRewriteCommand() {
+            return CommandsEnum.REWRITE_MOTIVATION_COMMAND;
         }
     },
 
@@ -118,6 +128,11 @@ public enum TextEntryType {
         public CommandsEnum getMainMenuCommand() {
             return CommandsEnum.WRITE_ADDITIONAL_INFORMATION_COMMAND;
         }
+
+        @Override
+        public CommandsEnum getRewriteCommand() {
+            return CommandsEnum.REWRITE_ADDITIONAL_INFORMATION_COMMAND;
+        }
     };
 
     private final TextEntryTypeParams params;
@@ -140,6 +155,10 @@ public enum TextEntryType {
 
     public abstract CommandsEnum getMainMenuCommand();
 
+    public abstract CommandsEnum getRewriteCommand();
+
+    public abstract CommandsEnum getSubmitCommand();
+
     public abstract String getMenuMessage();
 
     public abstract String getWriteMessage();
@@ -149,8 +168,6 @@ public enum TextEntryType {
     public abstract String getWriteCompletedMessage();
 
     public abstract String getContinueCompletedMessage();
-
-    public abstract CommandsEnum getSubmitCommand();
 
     static String getWriteCompletedMessage(String entryName) {
         return "Your " + entryName + " is complete. You are just adding the new version now. You can safely return to main menu or write the new text.";

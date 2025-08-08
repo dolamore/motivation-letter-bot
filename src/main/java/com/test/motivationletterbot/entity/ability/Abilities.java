@@ -105,7 +105,7 @@ public class Abilities implements AbilityExtension {
                     long chatId = ctx.chatId();
                     UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
                     state.getSessionAction().accept(session);
-
+                    log.warn("User session: {}", session.getBotCommands().toString());
                     commandService.setBotCommands(chatId, session.getBotCommands());
 
                     SendMessage sendMessage = SendMessage.builder()
