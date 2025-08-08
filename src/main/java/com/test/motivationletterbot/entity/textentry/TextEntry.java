@@ -81,12 +81,4 @@ public class TextEntry {
     public InlineKeyboardRow getKeyboardRow() {
         return type.getKeyboardRow();
     }
-
-    public InlineKeyboardRow getSubmitKeyboardRow() {
-        return type.getSubmitKeyboardRow();
-    }
-
-    public CommandsEnum getSubmitCommand() {
-        return type.getSubmitCommand();
-    }
 }

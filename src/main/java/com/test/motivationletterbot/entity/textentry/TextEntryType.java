@@ -10,10 +10,6 @@ import static com.test.motivationletterbot.entity.textentry.TextEntryTypeParams.
 public enum TextEntryType {
 
     VACANCY_TEXT_ENTRY(VACANCY_TEXT_ENTRY_PARAMS) {
-        @Override
-        public CommandsEnum getSubmitCommand() {
-            return CommandsEnum.SUBMIT_ROLE_DESCRIPTION_COMMAND;
-        }
 
         @Override
         public String getWriteMessage() {
@@ -52,10 +48,6 @@ public enum TextEntryType {
     },
 
     MOTIVATION_TEXT_ENTRY(MOTIVATION_TEXT_ENTRY_PARAMS) {
-        @Override
-        public CommandsEnum getSubmitCommand() {
-            return CommandsEnum.SUBMIT_MOTIVATION_COMMAND;
-        }
 
         @Override
         public String getWriteMessage() {
@@ -94,10 +86,6 @@ public enum TextEntryType {
     },
 
     ADDITIONAL_INFORMATION_TEXT_ENTRY(ADDITIONAL_INFORMATION_TEXT_ENTRY_PARAMS) {
-        @Override
-        public CommandsEnum getSubmitCommand() {
-            return CommandsEnum.SUBMIT_ADDITIONAL_INFORMATION_COMMAND;
-        }
 
         @Override
         public String getWriteMessage() {
@@ -141,14 +129,6 @@ public enum TextEntryType {
         return params.keyboardRow();
     }
 
-    public InlineKeyboardRow getSubmitKeyboardRow() {
-        return params.submitKeyboardRow();
-    }
-
-    public String getContinueAbilityKey() {
-        return params.continueAbilityKey();
-    }
-
     public boolean isMandatory() {
         return params.isMandatory();
     }
@@ -156,8 +136,6 @@ public enum TextEntryType {
     public abstract CommandsEnum getMainMenuCommand();
 
     public abstract CommandsEnum getRewriteCommand();
-
-    public abstract CommandsEnum getSubmitCommand();
 
     public abstract String getMenuMessage();
 
