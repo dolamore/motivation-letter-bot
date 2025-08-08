@@ -40,9 +40,18 @@ public record AbilityBehavior(
 
     public static AbilityBehavior createStartBehavior() {
         return new AbilityBehavior(
-            UserSession::startSession,
-            UserSession::startingMessage,
-            UserSession::startKeyboard
+                (session) -> {
+                },
+                UserSession::greetingMessage,
+                UserSession::greetingKeyboard
+        );
+    }
+
+    public static AbilityBehavior createRestartBehavior() {
+        return new AbilityBehavior(
+                UserSession::startSession,
+                UserSession::startingMessage,
+                UserSession::startKeyboard
         );
     }
 }

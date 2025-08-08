@@ -13,8 +13,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 
-import static com.test.motivationletterbot.constants.MessageConstants.MENU_MESSAGE;
-import static com.test.motivationletterbot.constants.MessageConstants.STARTING_MESSAGE;
+import static com.test.motivationletterbot.constants.MessageConstants.*;
 import static com.test.motivationletterbot.entity.textentry.TextEntryType.VACANCY_TEXT_ENTRY;
 import static com.test.motivationletterbot.entity.commands.BotMenuStateEnum.*;
 import static com.test.motivationletterbot.entity.keyboard.KeyboardRowEnum.GENERATE_ROW;
@@ -58,9 +57,7 @@ public class UserSession {
     }
 
     public void startSession() {
-
-        //TODO: make main menu state being dynamic
-        menuState = MAIN_MENU_STATE.getStateCommands();
+        menuState = START_MENU_STATE.getStateCommands();
         entries.values().forEach(TextEntry::reset);
         entries.values().forEach(entry -> entry.addButtonIfNotCompleted(menuState));
     }
@@ -111,6 +108,10 @@ public class UserSession {
         return inlineKeyboards.getStartKeyboard();
     }
 
+    public List<InlineKeyboardRow> greetingKeyboard() {
+        return inlineKeyboards.getGreetingKeyboard();
+    }
+
     public List<InlineKeyboardRow> menuKeyboard() {
         var keyboard = inlineKeyboards.getMenuKeyboard(entries.values());
         if (entries.get(VACANCY_TEXT_ENTRY).isComplete()) {
@@ -134,5 +135,9 @@ public class UserSession {
     public void addText(TextEntryType type, String text) {
         entries.get(type).append(text);
         menuState.add(type.getSubmitCommand());
+    }
+
+    public String greetingMessage() {
+        return GREETING_MESSAGE;
     }
 }
