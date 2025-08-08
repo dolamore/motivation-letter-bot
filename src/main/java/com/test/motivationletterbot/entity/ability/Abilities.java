@@ -15,6 +15,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -94,26 +95,12 @@ public class Abilities implements AbilityExtension {
                         return;
                     }
 
-                    commandService.setBotCommands(chatId, List.of(RESTART_COMMAND.getBotCommand()));
+                    String generatedMessage = buildJsonFromEntries(session.getEntries());
 
-                    // Remove previous inline keyboard if present
-                    if (session.isLastMessageHadKeyboard() && session.getLastKeyboardMessageId() > 0) {
-                        removeInlineKeyboard(chatId, session.getLastKeyboardMessageId());
-                        session.resetLastMessageKeyboardInfo();
-                    }
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("Your final text entries:\n\n");
-                    session.getEntries().forEach((type, entry) -> {
-                        sb.append(type.name()).append(": ");
-                        String finalText = entry.getFinalText();
-                        if (finalText != null && !finalText.isBlank()) {
-                            sb.append(finalText);
-                        } else {
-                            sb.append("<empty>");
-                        }
-                        sb.append("\n\n");
-                    });
-                    silent.send(sb.toString(), chatId);
+                    commandService.setBotCommands(chatId, List.of(RESTART_COMMAND.getBotCommand()));
+                    removePreviousInlineKeyboardIfPresent(chatId, session);
+
+                    silent.send(generatedMessage, chatId);
                 })
                 .build();
     }
@@ -164,9 +151,7 @@ public class Abilities implements AbilityExtension {
         try {
             Message sentMessage = telegramClient.execute(sendMessage);
 
-            if (session.isLastMessageHadKeyboard() && session.getLastKeyboardMessageId() > 0) {
-                removeInlineKeyboard(chatId, session.getLastKeyboardMessageId());
-            }
+            removePreviousInlineKeyboardIfPresent(chatId, session);
 
             if (state.getInlineKeyboardSupplier().apply(session) == null) {
                 session.resetLastMessageKeyboardInfo();
@@ -190,5 +175,28 @@ public class Abilities implements AbilityExtension {
         } catch (TelegramApiException e) {
             log.error("Failed to remove inline keyboard");
         }
+    }
+
+    private void removePreviousInlineKeyboardIfPresent(long chatId, UserSession session) {
+        if (session.isLastMessageHadKeyboard() && session.getLastKeyboardMessageId() > 0) {
+            removeInlineKeyboard(chatId, session.getLastKeyboardMessageId());
+        }
+    }
+
+    private String buildJsonFromEntries(Map<TextEntryType, TextEntry> entries) {
+        StringBuilder generatedMessage = new StringBuilder();
+        generatedMessage.append("{\n");
+        entries.forEach((type, entry) -> {
+            generatedMessage.append("  \"")
+                    .append(type.toString())
+                    .append("\": \"")
+                    .append(entry.getFinalText().isEmpty() ? "empty" : entry.getFinalText().replace("\"", "\\\""))
+                    .append("\",\n");
+        });
+        if (!entries.isEmpty()) {
+            generatedMessage.setLength(generatedMessage.length() - 2); // remove last comma and newline
+        }
+        generatedMessage.append("\n}");
+        return generatedMessage.toString();
     }
 }
