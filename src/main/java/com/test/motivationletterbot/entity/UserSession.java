@@ -13,7 +13,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static com.test.motivationletterbot.constants.MessageConstants.*;
 import static com.test.motivationletterbot.entity.textentry.TextEntryType.VACANCY_TEXT_ENTRY;
@@ -61,59 +60,57 @@ public class UserSession {
     }
 
     public void startSession() {
-        menuState.clear();
-        menuState.addAll(MAIN_MENU_STATE.getStateCommands());
+        clearMenuState();
         entries.values().forEach(TextEntry::reset);
-        entries.values().forEach(entry -> entry.addButtonIfNotCompleted(menuState));
+        addTextEntryButtons();
     }
 
     public void returnToMenu() {
-        entries.values().forEach(entry -> entry.setOnWork(false));
-        menuState.clear();
-        menuState.addAll(MAIN_MENU_STATE.getStateCommands());
-        entries.values().forEach(entry -> entry.addButtonIfNotCompleted(menuState));
+        setAllEntriesOnWorkFalse();
+        clearMenuState();
+        addTextEntryButtons();
     }
 
     public void startWriting(TextEntryType textEntryType) {
-        entries.values().forEach(entry -> entry.setOnWork(false));
+        setAllEntriesOnWorkFalse();
         var entry = entries.get(textEntryType);
         entry.startWriting();
-        menuState.clear();
-        menuState.addAll(MAIN_MENU_STATE.getStateCommands());
-        entries.values().stream().filter(e -> !e.isOnWork()).forEach(e -> e.addButtonIfNotCompleted(menuState));
+        clearMenuState();
+        addUncompletedTextEntryButtons();
     }
 
     public void continueWriting() {
-        var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().orElse(null);
+        var entry = getCurrentTextEntry();
         if (entry == null) {
             return;
         }
-        menuState.clear();
-        menuState.addAll(MAIN_MENU_STATE.getStateCommands());
+        clearMenuState();
         menuState.add(SUBMIT_COMMAND);
-        entries.values().forEach(e -> e.addButtonIfNotCompleted(menuState));
+        addTextEntryButtons();
     }
 
     public void completeTextEntry() {
-        var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().orElse(null);
+        var entry = getCurrentTextEntry();
         if (entry == null) {
             return;
         }
         entry.complete();
-        menuState.clear();
-        menuState.addAll(MAIN_MENU_STATE.getStateCommands());
-        entries.values().forEach(e -> e.addButtonIfNotCompleted(menuState));
+        clearMenuState();
+        addTextEntryButtons();
     }
 
     public String writeMessage() {
-        var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().get();
+        var entry = getCurrentTextEntry();
+        if (entry == null) {
+            return ERROR_MESSAGE;
+        }
         return entry.getWriteMessage();
     }
 
     public String continueMessage() {
-        var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().orElse(null);
+        var entry = getCurrentTextEntry();
         if (entry == null) {
-            return "This command is not available at the moment.";
+            return ERROR_MESSAGE;
         }
         return entry.getContinueMessage();
     }
@@ -141,14 +138,6 @@ public class UserSession {
         return menuMessage.toString();
     }
 
-    private boolean isAllMandatoryComplete() {
-        return entries.values().stream().filter(TextEntry::isMandatory).allMatch(TextEntry::isComplete);
-    }
-
-    private boolean isAllComplete() {
-        return entries.values().stream().allMatch(TextEntry::isComplete);
-    }
-
     public List<InlineKeyboardRow> startKeyboard() {
         return inlineKeyboards.getStartKeyboard();
     }
@@ -170,7 +159,7 @@ public class UserSession {
     }
 
     public List<InlineKeyboardRow> continueKeyboard() {
-        var entry = entries.values().stream().filter(TextEntry::isOnWork).findFirst().orElse(null);
+        var entry = getCurrentTextEntry();
         if (entry == null) {
             return inlineKeyboards.getReturnMenuKeyboard();
         }
@@ -188,5 +177,34 @@ public class UserSession {
 
     public String greetingMessage() {
         return GREETING_MESSAGE;
+    }
+
+    private void clearMenuState() {
+        menuState.clear();
+        menuState.addAll(MAIN_MENU_STATE.getStateCommands());
+    }
+
+    private void addTextEntryButtons() {
+        entries.values().forEach(entry -> entry.addButtonIfNotCompleted(menuState));
+    }
+
+    private void addUncompletedTextEntryButtons() {
+        entries.values().stream().filter(entry -> !entry.isComplete()).forEach(entry -> entry.addButtonIfNotCompleted(menuState));
+    }
+
+    private void setAllEntriesOnWorkFalse() {
+        entries.values().forEach(entry -> entry.setOnWork(false));
+    }
+
+    private boolean isAllMandatoryComplete() {
+        return entries.values().stream().filter(TextEntry::isMandatory).allMatch(TextEntry::isComplete);
+    }
+
+    private boolean isAllComplete() {
+        return entries.values().stream().allMatch(TextEntry::isComplete);
+    }
+
+    private TextEntry getCurrentTextEntry() {
+        return entries.values().stream().filter(TextEntry::isOnWork).findFirst().orElse(null);
     }
 }
