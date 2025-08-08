@@ -20,7 +20,9 @@ public enum CommandsEnum {
     REWRITE_ADDITIONAL_INFORMATION_COMMAND("/write_ai", "Rewrite additional information"),
 
     CONTINUE_COMMAND("/cont", "Continue writing"),
-    SUBMIT_COMMAND("/submit", "Submit");
+    SUBMIT_COMMAND("/submit", "Submit"),
+
+    GENERATE_COMMAND("/generate", "Generate message");
 
 
     private final BotCommand botCommand;

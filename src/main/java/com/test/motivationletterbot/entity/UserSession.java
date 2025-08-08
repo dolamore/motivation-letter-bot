@@ -182,6 +182,9 @@ public class UserSession {
     private void clearMenuState() {
         menuState.clear();
         menuState.addAll(MAIN_MENU_STATE.getStateCommands());
+        if (isAllMandatoryComplete()) {
+            menuState.add(GENERATE_COMMAND);
+        }
     }
 
     private void addTextEntryButtons() {
@@ -196,7 +199,7 @@ public class UserSession {
         entries.values().forEach(entry -> entry.setOnWork(false));
     }
 
-    private boolean isAllMandatoryComplete() {
+    public boolean isAllMandatoryComplete() {
         return entries.values().stream().filter(TextEntry::isMandatory).allMatch(TextEntry::isComplete);
     }
 
