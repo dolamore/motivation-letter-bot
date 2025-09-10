@@ -18,6 +18,7 @@ public class InlineKeyboards {
     private final List<InlineKeyboardRow> returnMenuKeyboard = List.of(RETURN_MENU_ROW.getRow());
     private final List<InlineKeyboardRow> greetingKeyboard = List.of(GREETING_ROW.getRow());
     private final List<InlineKeyboardRow> continueKeyboard = List.of(SUBMIT_ROW.getRow(), RETURN_MENU_ROW.getRow());
+    private final List<InlineKeyboardRow> restartKeyboard = List.of(GREETING_ROW.getRow());
 
     private List<InlineKeyboardRow> startKeyboard() {
         return List.of(ROLE_DESCRIPTION_ROW.getRow(), MOTIVATION_ROW.getRow(), ADDITIONAL_INFORMATION_ROW.getRow());

@@ -138,6 +138,10 @@ public class UserSession {
         return menuMessage.toString();
     }
 
+    public String generatedText() {
+        return "generated text";
+    }
+
     public List<InlineKeyboardRow> startKeyboard() {
         return inlineKeyboards.getStartKeyboard();
     }
@@ -164,6 +168,10 @@ public class UserSession {
             return inlineKeyboards.getReturnMenuKeyboard();
         }
         return inlineKeyboards.getContinueKeyboard();
+    }
+
+    public List<InlineKeyboardRow> restartKeyboard() {
+        return inlineKeyboards.getRestartKeyboard();
     }
 
     public boolean isOnWork(TextEntryType type) {

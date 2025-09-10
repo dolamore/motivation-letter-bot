@@ -27,6 +27,10 @@ public enum AbilitiesEnum {
             new AbilityMeta(MENU_COMMAND),
             AbilityBehavior.createMenuBehavior()
     ),
+    GENERATE_ABILITY(
+            new AbilityMeta(GENERATE_COMMAND),
+            AbilityBehavior.createGenerateBehavior()
+    ),
 
 
     WRITE_MOTIVATION_ABILITY(

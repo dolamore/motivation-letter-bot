@@ -39,12 +39,7 @@ public class Abilities implements AbilityExtension {
     private final CommandService commandService;
     private final KafkaProducer kafkaProducer;
 
-    public Abilities(
-            ConcurrentHashMap<Long, UserSession> userSessions,
-            SilentSender silent,
-            TelegramClient telegramClient,
-            CommandService commandService,
-            KafkaProducer kafkaProducer) {
+    public Abilities(ConcurrentHashMap<Long, UserSession> userSessions, SilentSender silent, TelegramClient telegramClient, CommandService commandService, KafkaProducer kafkaProducer) {
         this.commandService = commandService;
         this.userSessions = userSessions;
         this.silent = silent;
@@ -87,29 +82,27 @@ public class Abilities implements AbilityExtension {
     }
 
     public Ability generateMessage() {
-        return Ability.builder()
-                .name("generate")
-                .info("Generate a message")
-                .privacy(PUBLIC)
-                .locality(ALL)
-                .action(this::generateAction)
-                .build();
+        return getAbility(GENERATE_ABILITY).get();
     }
+
+//    public Ability generateMessage() {
+//        return Ability.builder()
+//                .name("generate")
+//                .info("Generate a message")
+//                .privacy(PUBLIC)
+//                .locality(ALL)
+//                .action(this::generateAction)
+//                .build();
+//    }
 
 
     private Supplier<Ability> getAbility(AbilitiesEnum state) {
-        return () -> Ability.builder()
-                .name(state.getAbilityName())
-                .info(state.getInfo())
-                .privacy(PUBLIC)
-                .locality(ALL)
-                .action(ctx -> {
-                    long chatId = ctx.chatId();
-                    UserSession session = prepareSessionAndCommands(chatId, state);
-                    SendMessage sendMessage = buildSendMessage(chatId, session, state);
-                    sendAndHandleKeyboard(chatId, session, sendMessage, state);
-                })
-                .build();
+        return () -> Ability.builder().name(state.getAbilityName()).info(state.getInfo()).privacy(PUBLIC).locality(ALL).action(ctx -> {
+            long chatId = ctx.chatId();
+            UserSession session = prepareSessionAndCommands(chatId, state);
+            SendMessage sendMessage = buildSendMessage(chatId, session, state);
+            sendAndHandleKeyboard(chatId, session, sendMessage, state);
+        }).build();
     }
 
     private void generateAction(MessageContext ctx) {
@@ -135,22 +128,11 @@ public class Abilities implements AbilityExtension {
     }
 
     private SendMessage buildSendMessage(long chatId, UserSession session, AbilitiesEnum state) {
-        return SendMessage.builder()
-                .chatId(chatId)
-                .text(state.getMessage().apply(session))
-                .replyMarkup(buildReplyMarkup(session, state))
-                .build();
+        return SendMessage.builder().chatId(chatId).text(state.getMessage().apply(session)).replyMarkup(buildReplyMarkup(session, state)).build();
     }
 
     private InlineKeyboardMarkup buildReplyMarkup(UserSession session, AbilitiesEnum state) {
-        return InlineKeyboardMarkup.builder()
-                .keyboard(
-                        Optional.ofNullable(state.getInlineKeyboardSupplier())
-                                .map(supplier -> supplier.apply(session))
-                                .filter(Objects::nonNull)
-                                .orElse(Collections.emptyList())
-                )
-                .build();
+        return InlineKeyboardMarkup.builder().keyboard(Optional.ofNullable(state.getInlineKeyboardSupplier()).map(supplier -> supplier.apply(session)).filter(Objects::nonNull).orElse(Collections.emptyList())).build();
     }
 
     private void sendAndHandleKeyboard(long chatId, UserSession session, SendMessage sendMessage, AbilitiesEnum state) {
@@ -171,11 +153,7 @@ public class Abilities implements AbilityExtension {
     }
 
     private void removeInlineKeyboard(long chatId, int messageId) {
-        EditMessageReplyMarkup editMarkup = EditMessageReplyMarkup.builder()
-                .chatId(chatId)
-                .messageId(messageId)
-                .replyMarkup(null)
-                .build();
+        EditMessageReplyMarkup editMarkup = EditMessageReplyMarkup.builder().chatId(chatId).messageId(messageId).replyMarkup(null).build();
         try {
             telegramClient.execute(editMarkup);
         } catch (TelegramApiException e) {
@@ -190,25 +168,8 @@ public class Abilities implements AbilityExtension {
         }
     }
 
-    private String buildJsonFromEntries(Map<TextEntryType, TextEntry> entries) {
-        StringBuilder generatedMessage = new StringBuilder();
-        generatedMessage.append("{\n");
-        entries.forEach((type, entry) -> generatedMessage.append("  \"")
-                .append(type.toString())
-                .append("\": \"")
-                .append(entry.getFinalText().isEmpty() ? "" : entry.getFinalText().replace("\"", "\\\""))
-                .append("\",\n"));
-        if (!entries.isEmpty()) {
-            generatedMessage.setLength(generatedMessage.length() - 2); // remove last comma and newline
-        }
-        generatedMessage.append("\n}");
-        return generatedMessage.toString();
-    }
-
     private void sendToKafka(long chatId, EnumMap<TextEntryType, TextEntry> messageText) {
-        CompletableFuture<SendResult<String, KafkaRequest>> future = kafkaProducer.sendRequest(
-                new KafkaRequest(chatId, messageText)
-        );
+        CompletableFuture<SendResult<String, KafkaRequest>> future = kafkaProducer.sendRequest(new KafkaRequest(chatId, messageText));
         future.whenComplete((result, e) -> {
             if (e != null) {
                 log.error("Failed to send Kafka request", e);
