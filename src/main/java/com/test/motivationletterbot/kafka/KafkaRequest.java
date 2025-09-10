@@ -1,5 +1,7 @@
 package com.test.motivationletterbot.kafka;
 
+import com.test.motivationletterbot.entity.UserSession;
+import com.test.motivationletterbot.entity.ability.AbilitiesEnum;
 import com.test.motivationletterbot.entity.textentry.TextEntry;
 import com.test.motivationletterbot.entity.textentry.TextEntryType;
 import lombok.AllArgsConstructor;
@@ -15,5 +17,7 @@ import java.util.EnumMap;
 @AllArgsConstructor
 public class KafkaRequest {
     private Long chatId;
-    private EnumMap<TextEntryType, TextEntry> entries;
+    private String text;
+    private UserSession session;
+    private AbilitiesEnum state;
 }

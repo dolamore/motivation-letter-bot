@@ -18,6 +18,7 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -105,20 +106,29 @@ public class Abilities implements AbilityExtension {
         }).build();
     }
 
-    private void generateAction(MessageContext ctx) {
-        long chatId = ctx.chatId();
-        UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
-
-        if (!session.isAllMandatoryComplete()) {
-            returnToMainMenu().action().accept(ctx);
-            return;
-        }
-
-        commandService.setBotCommands(chatId, List.of(RESTART_COMMAND.getBotCommand()));
-        removePreviousInlineKeyboardIfPresent(chatId, session);
-        log.warn("Role description {}", session.getEntries().get(TextEntryType.VACANCY_TEXT_ENTRY).getFinalText());
-        sendToKafka(chatId, session.getEntries());
+    private Supplier<Ability> getGenerativeAbility() {
+        return () -> Ability.builder().name("generate").info("Generate a message").privacy(PUBLIC).locality(ALL).action(ctx -> {
+            long chatId = ctx.chatId();
+            UserSession session = prepareSessionAndCommands(chatId, GENERATE_ABILITY);
+            SendMessage sendMessage = buildSendMessage(chatId, session, GENERATE_ABILITY);
+            sendAndHandleKeyboard(chatId, session, sendMessage, GENERATE_ABILITY);
+        }).build();
     }
+
+//    private void generateAction(MessageContext ctx) {
+//        long chatId = ctx.chatId();
+//        UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
+//
+//        if (!session.isAllMandatoryComplete()) {
+//            returnToMainMenu().action().accept(ctx);
+//            return;
+//        }
+//
+//        commandService.setBotCommands(chatId, List.of(RESTART_COMMAND.getBotCommand()));
+//        removePreviousInlineKeyboardIfPresent(chatId, session);
+//
+//        sendToKafka(chatId, session.getEntries());
+//    }
 
     private UserSession prepareSessionAndCommands(long chatId, AbilitiesEnum state) {
         UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
@@ -130,6 +140,7 @@ public class Abilities implements AbilityExtension {
     private SendMessage buildSendMessage(long chatId, UserSession session, AbilitiesEnum state) {
         return SendMessage.builder().chatId(chatId).text(state.getMessage().apply(session)).replyMarkup(buildReplyMarkup(session, state)).build();
     }
+
 
     private InlineKeyboardMarkup buildReplyMarkup(UserSession session, AbilitiesEnum state) {
         return InlineKeyboardMarkup.builder().keyboard(Optional.ofNullable(state.getInlineKeyboardSupplier()).map(supplier -> supplier.apply(session)).filter(Objects::nonNull).orElse(Collections.emptyList())).build();
@@ -152,6 +163,13 @@ public class Abilities implements AbilityExtension {
         }
     }
 
+    private void sendToKafkaAndHandleKeyboard(long chatId, String userPrompt, UserSession session) {
+        removePreviousInlineKeyboardIfPresent(chatId, session);
+
+        sendToKafka(chatId, userPrompt, session);
+
+    }
+
     private void removeInlineKeyboard(long chatId, int messageId) {
         EditMessageReplyMarkup editMarkup = EditMessageReplyMarkup.builder().chatId(chatId).messageId(messageId).replyMarkup(null).build();
         try {
@@ -168,8 +186,8 @@ public class Abilities implements AbilityExtension {
         }
     }
 
-    private void sendToKafka(long chatId, EnumMap<TextEntryType, TextEntry> messageText) {
-        CompletableFuture<SendResult<String, KafkaRequest>> future = kafkaProducer.sendRequest(new KafkaRequest(chatId, messageText));
+    private void sendToKafka(long chatId, String userPrompt, UserSession session) {
+        CompletableFuture<SendResult<String, KafkaRequest>> future = kafkaProducer.sendRequest(new KafkaRequest(chatId, userPrompt, session, GENERATE_ABILITY));
         future.whenComplete((result, e) -> {
             if (e != null) {
                 log.error("Failed to send Kafka request", e);
