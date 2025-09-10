@@ -8,6 +8,8 @@ spring:
       quiet-period: 400ms
     livereload:
       enabled: false
+  config:
+    import: "optional:dotenv:.env"
 
 
   kafka:
@@ -44,3 +46,10 @@ motivation-bot:
   kafka:
     request-topic: motivation-bot-requests
     response-topic: motivation-bot-responses
+
+llm:
+  system-prompt-path: classpath:system-prompt.txt
+
+openai:
+  api:
+    key: ${OPENAI_API_KEY:}

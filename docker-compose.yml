@@ -28,6 +28,8 @@ services:
 
   kafka:
     image: 'confluentinc/cp-kafka:7.5.0'
+    volumes:
+      - kafka-data:/var/lib/kafka/data
     container_name: kafka
     depends_on:
       - zookeeper
@@ -44,3 +46,6 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_CREATE_TOPICS: "motivation-bot-requests:1:1,motivation-bot-responses:1:1"
+
+volumes:
+  kafka-data:

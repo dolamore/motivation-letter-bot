@@ -1,5 +1,7 @@
 package com.test.motivationletterbot.entity.textentry;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.test.motivationletterbot.entity.commands.CommandsEnum;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,6 +18,16 @@ public class TextEntry {
     private boolean onWork = false;
     private boolean complete = false;
     private final TextEntryType type;
+
+
+    @JsonCreator
+    public TextEntry(@JsonProperty("type") TextEntryType type,
+                     @JsonProperty("finalText") String finalText) {
+        this.type = type;
+        this.isMandatory = type.isMandatory();
+        this.finalText = finalText != null ? finalText : "";
+    }
+
 
     public TextEntry(TextEntryType type) {
         this.type = type;

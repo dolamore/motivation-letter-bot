@@ -2,8 +2,14 @@ package com.test.motivationletterbot.entity.ability;
 
 import com.test.motivationletterbot.entity.commands.CommandService;
 import com.test.motivationletterbot.entity.UserSession;
+import com.test.motivationletterbot.entity.textentry.TextEntry;
+import com.test.motivationletterbot.entity.textentry.TextEntryType;
+import com.test.motivationletterbot.kafka.KafkaProducer;
+import com.test.motivationletterbot.kafka.KafkaRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.support.SendResult;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
+import org.telegram.telegrambots.abilitybots.api.objects.MessageContext;
 import org.telegram.telegrambots.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.abilitybots.api.util.AbilityExtension;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -13,11 +19,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -34,16 +37,19 @@ public class Abilities implements AbilityExtension {
     private final SilentSender silent;
     private final TelegramClient telegramClient;
     private final CommandService commandService;
+    private final KafkaProducer kafkaProducer;
 
     public Abilities(
             ConcurrentHashMap<Long, UserSession> userSessions,
             SilentSender silent,
             TelegramClient telegramClient,
-            CommandService commandService) {
+            CommandService commandService,
+            KafkaProducer kafkaProducer) {
         this.commandService = commandService;
         this.userSessions = userSessions;
         this.silent = silent;
         this.telegramClient = telegramClient;
+        this.kafkaProducer = kafkaProducer;
     }
 
     public Ability startMessageWriting() {
@@ -86,22 +92,7 @@ public class Abilities implements AbilityExtension {
                 .info("Generate a message")
                 .privacy(PUBLIC)
                 .locality(ALL)
-                .action(ctx -> {
-                    long chatId = ctx.chatId();
-                    UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
-
-                    if (!session.isAllMandatoryComplete()) {
-                        returnToMainMenu().action().accept(ctx);
-                        return;
-                    }
-
-                    String generatedMessage = buildJsonFromEntries(session.getEntries());
-
-                    commandService.setBotCommands(chatId, List.of(RESTART_COMMAND.getBotCommand()));
-                    removePreviousInlineKeyboardIfPresent(chatId, session);
-
-                    silent.send(generatedMessage, chatId);
-                })
+                .action(this::generateAction)
                 .build();
     }
 
@@ -119,6 +110,21 @@ public class Abilities implements AbilityExtension {
                     sendAndHandleKeyboard(chatId, session, sendMessage, state);
                 })
                 .build();
+    }
+
+    private void generateAction(MessageContext ctx) {
+        long chatId = ctx.chatId();
+        UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
+
+        if (!session.isAllMandatoryComplete()) {
+            returnToMainMenu().action().accept(ctx);
+            return;
+        }
+
+        commandService.setBotCommands(chatId, List.of(RESTART_COMMAND.getBotCommand()));
+        removePreviousInlineKeyboardIfPresent(chatId, session);
+        log.warn("Role description {}", session.getEntries().get(TextEntryType.VACANCY_TEXT_ENTRY).getFinalText());
+        sendToKafka(chatId, session.getEntries());
     }
 
     private UserSession prepareSessionAndCommands(long chatId, AbilitiesEnum state) {
@@ -174,6 +180,7 @@ public class Abilities implements AbilityExtension {
             telegramClient.execute(editMarkup);
         } catch (TelegramApiException e) {
             log.error("Failed to remove inline keyboard");
+            log.error(e.getMessage());
         }
     }
 
@@ -186,17 +193,29 @@ public class Abilities implements AbilityExtension {
     private String buildJsonFromEntries(Map<TextEntryType, TextEntry> entries) {
         StringBuilder generatedMessage = new StringBuilder();
         generatedMessage.append("{\n");
-        entries.forEach((type, entry) -> {
-            generatedMessage.append("  \"")
-                    .append(type.toString())
-                    .append("\": \"")
-                    .append(entry.getFinalText().isEmpty() ? "empty" : entry.getFinalText().replace("\"", "\\\""))
-                    .append("\",\n");
-        });
+        entries.forEach((type, entry) -> generatedMessage.append("  \"")
+                .append(type.toString())
+                .append("\": \"")
+                .append(entry.getFinalText().isEmpty() ? "" : entry.getFinalText().replace("\"", "\\\""))
+                .append("\",\n"));
         if (!entries.isEmpty()) {
             generatedMessage.setLength(generatedMessage.length() - 2); // remove last comma and newline
         }
         generatedMessage.append("\n}");
         return generatedMessage.toString();
+    }
+
+    private void sendToKafka(long chatId, EnumMap<TextEntryType, TextEntry> messageText) {
+        CompletableFuture<SendResult<String, KafkaRequest>> future = kafkaProducer.sendRequest(
+                new KafkaRequest(chatId, messageText)
+        );
+        future.whenComplete((result, e) -> {
+            if (e != null) {
+                log.error("Failed to send Kafka request", e);
+                silent.send(ERROR_MESSAGE, chatId);
+            } else {
+                silent.send("Generating...", chatId);
+            }
+        });
     }
 }

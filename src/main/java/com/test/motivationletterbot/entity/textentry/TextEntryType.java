@@ -45,6 +45,11 @@ public enum TextEntryType {
         public CommandsEnum getRewriteCommand() {
             return CommandsEnum.REWRITE_ROLE_DESCRIPTION_COMMAND;
         }
+
+        @Override
+        public String toString() {
+            return "vacancy_description";
+        }
     },
 
     MOTIVATION_TEXT_ENTRY(MOTIVATION_TEXT_ENTRY_PARAMS) {
@@ -83,6 +88,11 @@ public enum TextEntryType {
         public CommandsEnum getRewriteCommand() {
             return CommandsEnum.REWRITE_MOTIVATION_COMMAND;
         }
+
+        @Override
+        public String toString() {
+            return "user_motivation";
+        }
     },
 
     ADDITIONAL_INFORMATION_TEXT_ENTRY(ADDITIONAL_INFORMATION_TEXT_ENTRY_PARAMS) {
@@ -120,6 +130,11 @@ public enum TextEntryType {
         @Override
         public CommandsEnum getRewriteCommand() {
             return CommandsEnum.REWRITE_ADDITIONAL_INFORMATION_COMMAND;
+        }
+
+        @Override
+        public String toString() {
+            return "additional_information";
         }
     };
 
