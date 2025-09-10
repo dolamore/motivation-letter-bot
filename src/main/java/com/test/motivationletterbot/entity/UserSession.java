@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
@@ -44,9 +45,9 @@ public class UserSession {
     }
 
     public List<BotCommand> getBotCommands() {
-        return menuState.stream()
+        return new ArrayList<>(menuState.stream()
                 .map(CommandsEnum::getBotCommand)
-                .toList();
+                .toList());
     }
 
     public void resetLastMessageKeyboardInfo() {

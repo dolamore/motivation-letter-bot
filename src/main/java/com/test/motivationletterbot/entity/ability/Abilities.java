@@ -83,7 +83,7 @@ public class Abilities implements AbilityExtension {
     }
 
     public Ability generateMessage() {
-        return getAbility(GENERATE_ABILITY).get();
+        return getGenerativeAbility().get();
     }
 
 //    public Ability generateMessage() {
@@ -110,8 +110,7 @@ public class Abilities implements AbilityExtension {
         return () -> Ability.builder().name("generate").info("Generate a message").privacy(PUBLIC).locality(ALL).action(ctx -> {
             long chatId = ctx.chatId();
             UserSession session = prepareSessionAndCommands(chatId, GENERATE_ABILITY);
-            SendMessage sendMessage = buildSendMessage(chatId, session, GENERATE_ABILITY);
-            sendAndHandleKeyboard(chatId, session, sendMessage, GENERATE_ABILITY);
+            sendToKafkaAndHandleKeyboard(chatId, session);
         }).build();
     }
 
@@ -163,8 +162,10 @@ public class Abilities implements AbilityExtension {
         }
     }
 
-    private void sendToKafkaAndHandleKeyboard(long chatId, String userPrompt, UserSession session) {
+    private void sendToKafkaAndHandleKeyboard(long chatId, UserSession session) {
         removePreviousInlineKeyboardIfPresent(chatId, session);
+
+        String userPrompt = session.generatedText();
 
         sendToKafka(chatId, userPrompt, session);
 
