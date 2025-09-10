@@ -3,6 +3,7 @@ package com.test.motivationletterbot.bot;
 import com.test.motivationletterbot.entity.*;
 import com.test.motivationletterbot.entity.ability.Abilities;
 import com.test.motivationletterbot.entity.commands.CommandService;
+import com.test.motivationletterbot.kafka.KafkaConsumer;
 import com.test.motivationletterbot.kafka.KafkaProducer;
 import com.test.motivationletterbot.kafka.KafkaRequest;
 import com.test.motivationletterbot.util.BotUtils;
@@ -34,6 +35,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.test.motivationletterbot.constants.MessageConstants.*;
+import static com.test.motivationletterbot.util.BotUtils.isCommand;
 
 import org.telegram.telegrambots.abilitybots.api.db.DBContext;
 import org.telegram.telegrambots.abilitybots.api.db.MapDBContext;
@@ -44,27 +46,25 @@ import com.test.motivationletterbot.entity.textentry.TextEntryType;
 @Component
 public class MotivationLetterBot extends AbilityBot implements SpringLongPollingBot {
     private final BotProperties botProperties;
-    private final KafkaProducer kafkaProducer;
     private final long creatorId;
     private final ConcurrentHashMap<Long, UserSession> userSessions;
 
     public MotivationLetterBot(
             BotProperties botProperties,
-            KafkaProducer kafkaProducer,
             TelegramClient telegramClient,
             CommandService commandService,
             BareboneToggle toggle,
             ConcurrentHashMap<Long, UserSession> userSessions,
-            SilentSender silent) {
+            SilentSender silent,
+            KafkaProducer kafkaProducer) {
         super(
                 telegramClient,
                 botProperties.getName(),
                 useInMemoryMapDB(),
                 toggle
         );
-        addExtensions(new Abilities(userSessions, silent, telegramClient, commandService));
+        addExtensions(new Abilities(userSessions, silent, telegramClient, commandService, kafkaProducer));
         this.botProperties = botProperties;
-        this.kafkaProducer = kafkaProducer;
         this.creatorId = botProperties.getBotCreatorId();
         this.userSessions = userSessions;
     }
@@ -90,9 +90,10 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         super.consume(update);
 
         Optional.ofNullable(update.getMessage()).ifPresent(message -> {
-            if (BotUtils.isCommand(message)) {
+            if (isCommand(message)) {
                 return;
             }
+
             boolean found = false;
             for (var type : TextEntryType.values()) {
                 if (session.isOnWork(type)) {
@@ -177,18 +178,6 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     @Override
     public boolean checkGlobalFlags(Update update) {
         return Flag.TEXT.test(update) || Flag.CALLBACK_QUERY.test(update);
-    }
-
-    void sendToKafka(long chatId, String messageText) {
-        CompletableFuture<SendResult<String, KafkaRequest>> future = kafkaProducer.sendRequest(
-                new KafkaRequest(chatId, messageText)
-        );
-        future.whenComplete((result, e) -> {
-            if (e != null) {
-                log.error("Failed to send Kafka request", e);
-                sendMessage(chatId, ERROR_MESSAGE);
-            }
-        });
     }
 
     @PostConstruct
