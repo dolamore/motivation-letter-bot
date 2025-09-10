@@ -59,15 +59,20 @@ public class UserSession {
         lastMessageHadKeyboard = true;
     }
 
+    public void newSession() {
+        menuState.clear();
+        menuState.add(RESTART_COMMAND);
+    }
+
     public void startSession() {
-        clearMenuState();
+        updateMainMenuState();
         entries.values().forEach(TextEntry::reset);
         addTextEntryButtons();
     }
 
     public void returnToMenu() {
         setAllEntriesOnWorkFalse();
-        clearMenuState();
+        updateMainMenuState();
         addTextEntryButtons();
     }
 
@@ -75,7 +80,7 @@ public class UserSession {
         setAllEntriesOnWorkFalse();
         var entry = entries.get(textEntryType);
         entry.startWriting();
-        clearMenuState();
+        updateMainMenuState();
         addUncompletedTextEntryButtons();
     }
 
@@ -84,7 +89,7 @@ public class UserSession {
         if (entry == null) {
             return;
         }
-        clearMenuState();
+        updateMainMenuState();
         menuState.add(SUBMIT_COMMAND);
         addTextEntryButtons();
     }
@@ -95,7 +100,7 @@ public class UserSession {
             return;
         }
         entry.complete();
-        clearMenuState();
+        updateMainMenuState();
         addTextEntryButtons();
     }
 
@@ -187,7 +192,7 @@ public class UserSession {
         return GREETING_MESSAGE;
     }
 
-    private void clearMenuState() {
+    private void updateMainMenuState() {
         menuState.clear();
         menuState.addAll(MAIN_MENU_STATE.getStateCommands());
         if (isAllMandatoryComplete()) {

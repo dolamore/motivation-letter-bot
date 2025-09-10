@@ -65,7 +65,7 @@ public record AbilityBehavior(
 
     public static AbilityBehavior createGenerateBehavior() {
         return new AbilityBehavior(
-                UserSession::startSession,
+                UserSession::newSession,
                 UserSession::generatedText,
                 UserSession::restartKeyboard
         );
