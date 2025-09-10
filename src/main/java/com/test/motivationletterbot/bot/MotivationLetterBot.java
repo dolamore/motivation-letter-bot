@@ -2,12 +2,9 @@ package com.test.motivationletterbot.bot;
 
 import com.test.motivationletterbot.entity.*;
 import com.test.motivationletterbot.entity.ability.Abilities;
+import com.test.motivationletterbot.entity.ability.AbilitiesEnum;
 import com.test.motivationletterbot.entity.commands.CommandService;
-import com.test.motivationletterbot.kafka.KafkaConsumer;
 import com.test.motivationletterbot.kafka.KafkaProducer;
-import com.test.motivationletterbot.kafka.KafkaRequest;
-import com.test.motivationletterbot.util.BotUtils;
-import org.springframework.kafka.support.SendResult;
 
 
 import lombok.extern.slf4j.Slf4j;
@@ -21,20 +18,22 @@ import org.telegram.telegrambots.longpolling.BotSession;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.AfterBotRegistration;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
+
+import java.io.File;
 
 import jakarta.annotation.PostConstruct;
 
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.test.motivationletterbot.constants.MessageConstants.*;
 import static com.test.motivationletterbot.util.BotUtils.isCommand;
 
 import org.telegram.telegrambots.abilitybots.api.db.DBContext;
@@ -141,13 +140,6 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         return creatorId;
     }
 
-    private SendMessage buildSendMessage(long chatId, String text) {
-        return SendMessage.builder()
-                .chatId(chatId)
-                .text(text)
-                .build();
-    }
-
     public void sendMessage(long chatId, String messageText) {
         SendMessage message = buildSendMessage(chatId, messageText);
         try {
@@ -155,6 +147,43 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         } catch (TelegramApiException e) {
             log.error("Failed to send message", e);
         }
+    }
+
+    private SendMessage buildSendMessage(long chatId, String text) {
+        return SendMessage.builder()
+                .chatId(chatId)
+                .text(text)
+                .build();
+    }
+
+    public void sendPdf(long chatId, UserSession session, AbilitiesEnum state, File pdfFile) {
+        SendDocument sendDocument = buildSendPdf(chatId, session, state, pdfFile);
+        Message sentDocument = null;
+        try {
+            sentDocument = telegramClient.execute(sendDocument);
+        } catch (TelegramApiException e) {
+            log.error("Failed to send PDF document", e);
+        }
+        if (sentDocument != null) {
+            if (state.getInlineKeyboardSupplier().apply(session) == null) {
+                session.resetLastMessageKeyboardInfo();
+            } else {
+                int messageId = sentDocument.getMessageId();
+                session.setLastMessageKeyboardInfo(messageId);
+            }
+        }
+    }
+
+    private SendDocument buildSendPdf(long chatId, UserSession session, AbilitiesEnum state, File pdfFile) {
+        return SendDocument.builder()
+                .chatId(chatId)
+                .document(new InputFile(pdfFile))
+                .replyMarkup(buildReplyMarkup(session, state))
+                .build();
+    }
+
+    private InlineKeyboardMarkup buildReplyMarkup(UserSession session, AbilitiesEnum state) {
+        return InlineKeyboardMarkup.builder().keyboard(Optional.ofNullable(state.getInlineKeyboardSupplier()).map(supplier -> supplier.apply(session)).filter(Objects::nonNull).orElse(Collections.emptyList())).build();
     }
 
     private UserSession getOrCreateUserSession(Update update) {
