@@ -7,6 +7,7 @@ import com.test.motivationletterbot.entity.commands.CommandService;
 import com.test.motivationletterbot.kafka.KafkaProducer;
 
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.abilitybots.api.bot.AbilityBot;
@@ -19,8 +20,6 @@ import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsume
 import org.telegram.telegrambots.longpolling.starter.AfterBotRegistration;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -44,6 +43,7 @@ import com.test.motivationletterbot.entity.textentry.TextEntryType;
 
 @Slf4j
 @Component
+@Getter
 public class MotivationLetterBot extends AbilityBot implements SpringLongPollingBot {
     private final BotProperties botProperties;
     private final long creatorId;
@@ -143,23 +143,8 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         return creatorId;
     }
 
-    public void sendMessage(long chatId, String messageText) {
-        SendMessage message = buildSendMessage(chatId, messageText);
-        try {
-            telegramClient.execute(message);
-        } catch (TelegramApiException e) {
-            log.error("Failed to send message", e);
-        }
-    }
-
-    private SendMessage buildSendMessage(long chatId, String text) {
-        return SendMessage.builder()
-                .chatId(chatId)
-                .text(text)
-                .build();
-    }
-
-    public void sendPdf(long chatId, UserSession session, AbilitiesEnum state, File pdfFile) {
+    public void sendPdf(long chatId, AbilitiesEnum state, File pdfFile) {
+        var session = userSessions.get(chatId);
         SendDocument sendDocument = buildSendPdf(chatId, session, state, pdfFile);
         Message sentDocument = null;
         try {
@@ -175,6 +160,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
             } else {
                 int messageId = sentDocument.getMessageId();
                 session.setLastMessageKeyboardInfo(messageId);
+                log.warn("Updated session after sending PDF: {}", session);
             }
         }
     }

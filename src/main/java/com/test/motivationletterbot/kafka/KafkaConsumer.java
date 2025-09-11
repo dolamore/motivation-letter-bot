@@ -2,6 +2,7 @@ package com.test.motivationletterbot.kafka;
 
 import com.test.motivationletterbot.bot.MotivationLetterBot;
 import com.test.motivationletterbot.llm.LlmClient;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -15,12 +16,14 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+import com.test.motivationletterbot.entity.UserSession;
 
 import java.io.File;
 import java.io.IOException;
 
 @Slf4j
 @Service
+@Getter
 public class KafkaConsumer {
     private final MotivationLetterBot motivationLetterBot;
     private final KafkaTemplate<String, KafkaResponse> responseKafkaTemplate;
@@ -41,17 +44,23 @@ public class KafkaConsumer {
     @KafkaListener(topics = "${motivation-bot.kafka.request-topic}", groupId = "motivation-letter-bot")
     public void handleRequest(KafkaRequest request) throws Exception {
         String generatedReply = llmClient.sendPrompt(request.getText());
-        KafkaResponse response = new KafkaResponse(request.getChatId(), generatedReply, request.getSession(), request.getState());
+        KafkaResponse response = new KafkaResponse(request.getChatId(), generatedReply, request.getState());
         responseKafkaTemplate.send(responseTopic, response);
     }
 
     @KafkaListener(topics = "${motivation-bot.kafka.response-topic}", groupId = "motivation-letter-bot")
     public void handleResponse(KafkaResponse response) throws IOException {
-        File pdfFile = generatePdf(response.getChatId(), response.getGeneratedText());
-        motivationLetterBot.sendPdf(response.getChatId(), response.getSession(), response.getState(), pdfFile);
+        File pdfFile = generatePdf(response.getGeneratedText());
+        // Fetch live in-memory session from the bot to avoid stale/serialized session state
+        UserSession liveSession = motivationLetterBot.getUserSessions().get(response.getChatId());
+        if (liveSession == null) {
+            log.warn("No live in-memory session for chat {} — creating a temporary session for PDF send", response.getChatId());
+            liveSession = new UserSession();
+        }
+        motivationLetterBot.sendPdf(response.getChatId(), response.getState(), pdfFile);
     }
 
-    private File generatePdf(long chatId, String generatedText) throws IOException {
+    private File generatePdf(String generatedText) throws IOException {
         // Create new PDF document
         PDDocument document = new PDDocument();
         PDPage page = new PDPage(PDRectangle.A4);

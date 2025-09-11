@@ -90,6 +90,7 @@ public class Abilities implements AbilityExtension {
         return () -> Ability.builder().name(state.getAbilityName()).info(state.getInfo()).privacy(PUBLIC).locality(ALL).action(ctx -> {
             long chatId = ctx.chatId();
             UserSession session = prepareSessionAndCommands(chatId, state);
+            log.warn("session after prepare: {}", session);
             SendMessage sendMessage = buildSendMessage(chatId, session, state);
             sendAndHandleKeyboard(chatId, session, sendMessage, state);
         }).build();
@@ -182,7 +183,7 @@ public class Abilities implements AbilityExtension {
     }
 
     private void sendToKafka(long chatId, String userPrompt, UserSession session) {
-        CompletableFuture<SendResult<String, KafkaRequest>> future = kafkaProducer.sendRequest(new KafkaRequest(chatId, userPrompt, session, GENERATE_ABILITY));
+        CompletableFuture<SendResult<String, KafkaRequest>> future = kafkaProducer.sendRequest(new KafkaRequest(chatId, userPrompt, GENERATE_ABILITY));
         future.whenComplete((result, e) -> {
             if (e != null) {
                 log.error("Failed to send Kafka request", e);
