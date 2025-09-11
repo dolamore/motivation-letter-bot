@@ -8,24 +8,29 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 @Getter
 @AllArgsConstructor
 public enum KeyboardRowEnum {
-    ROLE_DESCRIPTION_ROW(createRow("Role description", "write_rd")),
+    ROLE_DESCRIPTION_ROW("Role description", "write_rd"),
 
-    MOTIVATION_ROW(createRow("Motivation", "write_m")),
+    MOTIVATION_ROW("Motivation", "write_m"),
 
-    ADDITIONAL_INFORMATION_ROW(createRow("Company/product spec", "write_ai")),
+    ADDITIONAL_INFORMATION_ROW("Company/product spec", "write_ai"),
 
-    GREETING_ROW(createRow("Create new letter", "new")),
-    RETURN_MENU_ROW(createRow("Return to menu", "menu")),
-    SUBMIT_ROW(createRow("Submit", "submit")),
-    GENERATE_ROW(createRow("Generate Message", "generate"));
+    GREETING_ROW("Create new letter", "new"),
+    RETURN_MENU_ROW("Return to menu", "menu"),
+    SUBMIT_ROW("Submit", "submit"),
+    GENERATE_ROW("Generate Message", "generate");
 
-    private static InlineKeyboardRow createRow(String text, String callbackData) {
+    private final String text;
+    private final String callbackData;
+
+    /**
+     * Build and return a fresh InlineKeyboardRow containing a single button.
+     * This prevents sharing/mutation of the same InlineKeyboardRow instance across different keyboards.
+     */
+    public InlineKeyboardRow getRow() {
         InlineKeyboardButton button = InlineKeyboardButton.builder()
-                .text(text)
-                .callbackData(callbackData)
+                .text(this.text)
+                .callbackData(this.callbackData)
                 .build();
         return new InlineKeyboardRow(button);
     }
-
-    private final InlineKeyboardRow row;
 }

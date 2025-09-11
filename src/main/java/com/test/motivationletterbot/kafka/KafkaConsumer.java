@@ -60,7 +60,7 @@ public class KafkaConsumer {
         PDType1Font font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
 
         // Define output file
-        File outputFile = new File("motivation_letter_" + chatId + ".pdf");
+        File outputFile = new File("Balkouski, Motivational Letter.pdf");
 
         // Write content
         try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {

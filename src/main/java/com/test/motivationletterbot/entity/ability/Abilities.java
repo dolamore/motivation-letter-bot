@@ -9,16 +9,16 @@ import com.test.motivationletterbot.kafka.KafkaRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.support.SendResult;
 import org.telegram.telegrambots.abilitybots.api.objects.Ability;
-import org.telegram.telegrambots.abilitybots.api.objects.MessageContext;
 import org.telegram.telegrambots.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.abilitybots.api.util.AbilityExtension;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -28,7 +28,6 @@ import java.util.function.Supplier;
 
 import static com.test.motivationletterbot.constants.MessageConstants.ERROR_MESSAGE;
 import static com.test.motivationletterbot.entity.ability.AbilitiesEnum.*;
-import static com.test.motivationletterbot.entity.commands.CommandsEnum.RESTART_COMMAND;
 import static org.telegram.telegrambots.abilitybots.api.objects.Locality.ALL;
 import static org.telegram.telegrambots.abilitybots.api.objects.Privacy.PUBLIC;
 
@@ -86,16 +85,6 @@ public class Abilities implements AbilityExtension {
         return getGenerativeAbility().get();
     }
 
-//    public Ability generateMessage() {
-//        return Ability.builder()
-//                .name("generate")
-//                .info("Generate a message")
-//                .privacy(PUBLIC)
-//                .locality(ALL)
-//                .action(this::generateAction)
-//                .build();
-//    }
-
 
     private Supplier<Ability> getAbility(AbilitiesEnum state) {
         return () -> Ability.builder().name(state.getAbilityName()).info(state.getInfo()).privacy(PUBLIC).locality(ALL).action(ctx -> {
@@ -114,21 +103,6 @@ public class Abilities implements AbilityExtension {
         }).build();
     }
 
-//    private void generateAction(MessageContext ctx) {
-//        long chatId = ctx.chatId();
-//        UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
-//
-//        if (!session.isAllMandatoryComplete()) {
-//            returnToMainMenu().action().accept(ctx);
-//            return;
-//        }
-//
-//        commandService.setBotCommands(chatId, List.of(RESTART_COMMAND.getBotCommand()));
-//        removePreviousInlineKeyboardIfPresent(chatId, session);
-//
-//        sendToKafka(chatId, session.getEntries());
-//    }
-
     private UserSession prepareSessionAndCommands(long chatId, AbilitiesEnum state) {
         UserSession session = userSessions.computeIfAbsent(chatId, id -> new UserSession());
         state.getSessionAction().accept(session);
@@ -142,7 +116,24 @@ public class Abilities implements AbilityExtension {
 
 
     private InlineKeyboardMarkup buildReplyMarkup(UserSession session, AbilitiesEnum state) {
-        return InlineKeyboardMarkup.builder().keyboard(Optional.ofNullable(state.getInlineKeyboardSupplier()).map(supplier -> supplier.apply(session)).filter(Objects::nonNull).orElse(Collections.emptyList())).build();
+        List<InlineKeyboardRow> rows = Optional.ofNullable(state.getInlineKeyboardSupplier())
+                .map(supplier -> supplier.apply(session))
+                .filter(Objects::nonNull)
+                .orElse(Collections.emptyList());
+
+        // log keyboard composition for troubleshooting
+        log.warn("Building reply markup for state {}: rows={}", state, rows.size());
+        for (int i = 0; i < rows.size(); i++) {
+            InlineKeyboardRow row = rows.get(i);
+            StringBuilder sb = new StringBuilder();
+            for (InlineKeyboardButton btn : row) {
+                sb.append('{').append(btn.getText()).append(':').append(btn.getCallbackData()).append('}');
+            }
+            log.warn(" row {} buttons={}", i, sb.toString());
+        }
+
+        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
+        return markup;
     }
 
     private void sendAndHandleKeyboard(long chatId, UserSession session, SendMessage sendMessage, AbilitiesEnum state) {
@@ -174,10 +165,13 @@ public class Abilities implements AbilityExtension {
     private void removeInlineKeyboard(long chatId, int messageId) {
         EditMessageReplyMarkup editMarkup = EditMessageReplyMarkup.builder().chatId(chatId).messageId(messageId).replyMarkup(null).build();
         try {
-            telegramClient.execute(editMarkup);
-        } catch (TelegramApiException e) {
+            try {
+                telegramClient.execute(editMarkup);
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (Exception e) {
             log.error("Failed to remove inline keyboard");
-            log.error(e.getMessage());
         }
     }
 

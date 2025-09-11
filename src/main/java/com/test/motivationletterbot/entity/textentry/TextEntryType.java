@@ -141,7 +141,8 @@ public enum TextEntryType {
     private final TextEntryTypeParams params;
 
     public InlineKeyboardRow getKeyboardRow() {
-        return params.keyboardRow();
+        // build and return a fresh InlineKeyboardRow from the stored KeyboardRowEnum
+        return params.keyboardRow().getRow();
     }
 
     public boolean isMandatory() {
