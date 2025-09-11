@@ -20,6 +20,7 @@ import org.telegram.telegrambots.longpolling.starter.AfterBotRegistration;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -47,6 +48,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     private final BotProperties botProperties;
     private final long creatorId;
     private final ConcurrentHashMap<Long, UserSession> userSessions;
+    private final CommandService commandService;
 
     public MotivationLetterBot(
             BotProperties botProperties,
@@ -66,6 +68,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         this.botProperties = botProperties;
         this.creatorId = botProperties.getBotCreatorId();
         this.userSessions = userSessions;
+        this.commandService = commandService;
     }
 
     @Override
@@ -164,6 +167,8 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         } catch (TelegramApiException e) {
             log.error("Failed to send PDF document", e);
         }
+        state.getSessionAction().accept(session);
+        commandService.setBotCommands(chatId, session.getBotCommands());
         if (sentDocument != null) {
             if (state.getInlineKeyboardSupplier().apply(session) == null) {
                 session.resetLastMessageKeyboardInfo();

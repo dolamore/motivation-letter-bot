@@ -2,6 +2,7 @@ package com.test.motivationletterbot.entity;
 
 import com.test.motivationletterbot.entity.commands.CommandsEnum;
 import com.test.motivationletterbot.entity.keyboard.InlineKeyboards;
+import com.test.motivationletterbot.entity.keyboard.KeyboardRowEnum;
 import com.test.motivationletterbot.entity.textentry.TextEntry;
 import com.test.motivationletterbot.entity.textentry.TextEntryType;
 import lombok.Getter;
@@ -158,8 +159,13 @@ public class UserSession {
 
     public List<InlineKeyboardRow> menuKeyboard() {
         var keyboard = inlineKeyboards.getMenuKeyboard(entries.values());
+        // add generate row only if VACANCY is complete and not already present
         if (entries.get(VACANCY_TEXT_ENTRY).isComplete()) {
-            keyboard.add(GENERATE_ROW.getRow());
+            boolean hasGenerate = keyboard.stream().flatMap(row -> row.stream())
+                    .anyMatch(button -> KeyboardRowEnum.GENERATE_ROW.getCallbackData().equals(button.getCallbackData()));
+            if (!hasGenerate) {
+                keyboard.add(KeyboardRowEnum.GENERATE_ROW.getRow());
+            }
         }
         return keyboard;
     }
