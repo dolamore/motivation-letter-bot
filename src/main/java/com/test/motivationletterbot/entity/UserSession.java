@@ -104,7 +104,6 @@ public class UserSession {
         entry.complete();
         updateMainMenuState();
         addTextEntryButtons();
-        log.warn(entry.getFinalText());
     }
 
     public String writeMessage() {

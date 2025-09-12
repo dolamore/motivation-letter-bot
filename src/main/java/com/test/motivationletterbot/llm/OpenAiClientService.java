@@ -24,7 +24,7 @@ public final class OpenAiClientService extends AbstractLlmClient {
                 .apiKey(apiKey)
                 .build();
         ;
-        this.model = ChatModel.GPT_5_NANO;
+        this.model = ChatModel.GPT_5;
     }
 
     public String sendPrompt(String userPrompt) {
