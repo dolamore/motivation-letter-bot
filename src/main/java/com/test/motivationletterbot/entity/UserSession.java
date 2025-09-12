@@ -19,8 +19,8 @@ import java.util.List;
 import static com.test.motivationletterbot.constants.MessageConstants.*;
 import static com.test.motivationletterbot.entity.textentry.TextEntryType.VACANCY_TEXT_ENTRY;
 import static com.test.motivationletterbot.entity.commands.BotMenuStateEnum.*;
-import static com.test.motivationletterbot.entity.keyboard.KeyboardRowEnum.GENERATE_ROW;
 import static com.test.motivationletterbot.entity.commands.CommandsEnum.*;
+import static com.test.motivationletterbot.util.UserPromptGenerator.buildUserPrompt;
 
 @Getter
 @Setter
@@ -146,7 +146,11 @@ public class UserSession {
     }
 
     public String generatedText() {
-        return "generated text";
+        try {
+            return buildUserPrompt(entries);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to build user prompt", e);
+        }
     }
 
     public List<InlineKeyboardRow> startKeyboard() {
