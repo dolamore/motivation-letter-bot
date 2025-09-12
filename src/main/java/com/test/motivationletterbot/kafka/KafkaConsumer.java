@@ -53,10 +53,6 @@ public class KafkaConsumer {
         File pdfFile = generatePdf(response.getGeneratedText());
         // Fetch live in-memory session from the bot to avoid stale/serialized session state
         UserSession liveSession = motivationLetterBot.getUserSessions().get(response.getChatId());
-        if (liveSession == null) {
-            log.warn("No live in-memory session for chat {} — creating a temporary session for PDF send", response.getChatId());
-            liveSession = new UserSession();
-        }
         motivationLetterBot.sendPdf(response.getChatId(), response.getState(), pdfFile);
     }
 
@@ -66,41 +62,42 @@ public class KafkaConsumer {
         PDPage page = new PDPage(PDRectangle.A4);
         document.addPage(page);
 
-        PDType1Font font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+        PDType1Font font = new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN);
 
         // Define output file
         File outputFile = new File("Balkouski, Motivational Letter.pdf");
 
-        // Write content
         try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-
-            // Title
-            contentStream.beginText();
-            contentStream.setFont(font, 18);
-            contentStream.newLineAtOffset(50, 750);
-            contentStream.showText("Motivation Letter");
-            contentStream.endText();
-
-            // Body text
             contentStream.beginText();
             contentStream.setFont(font, 12);
             contentStream.setLeading(16f); // line spacing
-            contentStream.newLineAtOffset(50, 700);
+            contentStream.newLineAtOffset(50, 750); // start position (50 from left, 750 from bottom)
 
-            // Split text into lines so it fits on the page
-            int maxLineLength = 80;
-            String[] words = generatedText.split(" ");
-            StringBuilder line = new StringBuilder();
-            for (String word : words) {
-                if (line.length() + word.length() > maxLineLength) {
-                    contentStream.showText(line.toString());
-                    contentStream.newLine();
-                    line = new StringBuilder();
+            int maxLineLength = 80; // adjust as needed
+
+            // Split text into paragraphs by line breaks
+            String[] paragraphs = generatedText.split("\\r?\\n");
+            for (String paragraph : paragraphs) {
+                String[] words = paragraph.split(" ");
+                StringBuilder line = new StringBuilder();
+
+                for (String word : words) {
+                    if (line.length() + word.length() > maxLineLength) {
+                        contentStream.showText(line.toString().trim());
+                        contentStream.newLine();
+                        line = new StringBuilder();
+                    }
+                    line.append(word).append(" ");
                 }
-                line.append(word).append(" ");
-            }
-            if (!line.isEmpty()) {
-                contentStream.showText(line.toString());
+
+                // Print last line of the paragraph
+                if (!line.isEmpty()) {
+                    contentStream.showText(line.toString().trim());
+                    contentStream.newLine();
+                }
+
+                // Extra new line for paragraph spacing
+                contentStream.newLine();
             }
 
             contentStream.endText();
@@ -112,4 +109,5 @@ public class KafkaConsumer {
 
         return outputFile;
     }
+
 }

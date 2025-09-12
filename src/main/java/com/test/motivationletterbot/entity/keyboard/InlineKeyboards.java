@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -28,17 +29,14 @@ public class InlineKeyboards {
     }
 
     public List<InlineKeyboardRow> getMenuKeyboard(Collection<TextEntry> textEntries) {
-        var keyboard = new java.util.ArrayList<>(emptyKeyboard);
-        log.warn("Building menu keyboard: initialRows={} entries={}", keyboard.size(), textEntries == null ? 0 : textEntries.size());
+        var keyboard = new ArrayList<>(emptyKeyboard);
         if (textEntries != null) {
             textEntries.forEach(textEntry -> {
-                log.warn("Building menu keyboard: textEntry={}", textEntry);
                 if (!textEntry.isComplete()) {
                     keyboard.add(textEntry.getKeyboardRow());
                 }
             });
         }
-        log.warn("Built menu keyboard: finalRows={}", keyboard.size());
         return keyboard;
     }
 }

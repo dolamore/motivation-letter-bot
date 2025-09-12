@@ -160,7 +160,6 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
             } else {
                 int messageId = sentDocument.getMessageId();
                 session.setLastMessageKeyboardInfo(messageId);
-                log.warn("Updated session after sending PDF: {}", session);
             }
         }
     }

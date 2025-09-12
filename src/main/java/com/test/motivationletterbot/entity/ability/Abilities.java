@@ -2,8 +2,6 @@ package com.test.motivationletterbot.entity.ability;
 
 import com.test.motivationletterbot.entity.commands.CommandService;
 import com.test.motivationletterbot.entity.UserSession;
-import com.test.motivationletterbot.entity.textentry.TextEntry;
-import com.test.motivationletterbot.entity.textentry.TextEntryType;
 import com.test.motivationletterbot.kafka.KafkaProducer;
 import com.test.motivationletterbot.kafka.KafkaRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +13,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
