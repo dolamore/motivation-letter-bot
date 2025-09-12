@@ -12,7 +12,7 @@ import java.util.EnumSet;
 @Getter
 @Setter
 public class TextEntry {
-    private final StringBuffer text = new StringBuffer();
+    private final StringBuffer textBuffer = new StringBuffer();
     private final boolean isMandatory;
     private String finalText = "";
     private boolean onWork = false;
@@ -35,32 +35,29 @@ public class TextEntry {
     }
 
     public void reset() {
-        getText().setLength(0);
+        getTextBuffer().setLength(0);
         setFinalText("");
         setOnWork(false);
         setComplete(false);
     }
 
     public void startWriting() {
-        getText().setLength(0);
+        getTextBuffer().setLength(0);
         setOnWork(true);
     }
 
     public void append(String text) {
         if (text != null && !text.isEmpty()) {
-            getText().append(text);
+            textBuffer.append(text);
+            textBuffer.append(" ");
         }
     }
 
     public void complete() {
-        finalText = text.toString();
+        finalText = textBuffer.toString();
 
         complete = true;
         onWork = false;
-    }
-
-    public boolean isBufferEmpty() {
-        return text.isEmpty();
     }
 
     public void addButtonIfNotCompleted(EnumSet<CommandsEnum> commands) {

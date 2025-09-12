@@ -90,7 +90,6 @@ public class Abilities implements AbilityExtension {
         return () -> Ability.builder().name(state.getAbilityName()).info(state.getInfo()).privacy(PUBLIC).locality(ALL).action(ctx -> {
             long chatId = ctx.chatId();
             UserSession session = prepareSessionAndCommands(chatId, state);
-            log.warn("session after prepare: {}", session);
             SendMessage sendMessage = buildSendMessage(chatId, session, state);
             sendAndHandleKeyboard(chatId, session, sendMessage, state);
         }).build();
@@ -121,17 +120,6 @@ public class Abilities implements AbilityExtension {
                 .map(supplier -> supplier.apply(session))
                 .filter(Objects::nonNull)
                 .orElse(Collections.emptyList());
-
-        // log keyboard composition for troubleshooting
-        log.warn("Building reply markup for state {}: rows={}", state, rows.size());
-        for (int i = 0; i < rows.size(); i++) {
-            InlineKeyboardRow row = rows.get(i);
-            StringBuilder sb = new StringBuilder();
-            for (InlineKeyboardButton btn : row) {
-                sb.append('{').append(btn.getText()).append(':').append(btn.getCallbackData()).append('}');
-            }
-            log.warn(" row {} buttons={}", i, sb.toString());
-        }
 
         InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
         return markup;

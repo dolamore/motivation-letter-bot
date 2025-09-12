@@ -19,7 +19,7 @@ public class UserPromptGenerator {
 
         for (var entry : entries.entrySet()) {
             String key = entry.getKey().toString();
-            String value = String.valueOf(entry.getValue().getText());
+            String value = String.valueOf(entry.getValue().getTextBuffer());
             userPrompt = userPrompt.replace("{{" + key + "}}", value);
         }
 
