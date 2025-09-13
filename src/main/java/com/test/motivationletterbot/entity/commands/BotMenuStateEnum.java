@@ -10,11 +10,8 @@ import static com.test.motivationletterbot.entity.commands.CommandsEnum.*;
 @Getter
 @AllArgsConstructor
 public enum BotMenuStateEnum {
-    START_MENU_STATE(EnumSet.of(RESTART_COMMAND)),
-    MAIN_MENU_STATE(EnumSet.of(RESTART_COMMAND)),
-    MOTIVATION_MENU_STATE(EnumSet.of(WRITE_ROLE_DESCRIPTION_COMMAND, WRITE_MOTIVATION_COMMAND, WRITE_ADDITIONAL_INFORMATION_COMMAND)),
-    VACANCY_MENU_STATE(EnumSet.of(START_COMMAND, WRITE_MOTIVATION_COMMAND, WRITE_ROLE_DESCRIPTION_COMMAND));
+    START_MENU_BASE_STATE(EnumSet.of(RESTART_COMMAND)),
 
     private final EnumSet<CommandsEnum> stateCommands;
-}
+    }
 
