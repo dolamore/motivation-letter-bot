@@ -40,8 +40,7 @@ public record AbilityBehavior(
 
     public static AbilityBehavior createStartBehavior() {
         return new AbilityBehavior(
-                (session) -> {
-                },
+                UserSession::startSession,
                 UserSession::greetingMessage,
                 UserSession::greetingKeyboard
         );
@@ -49,7 +48,7 @@ public record AbilityBehavior(
 
     public static AbilityBehavior createRestartBehavior() {
         return new AbilityBehavior(
-                UserSession::startSession,
+                UserSession::restartSession,
                 UserSession::startingMessage,
                 UserSession::startKeyboard
         );

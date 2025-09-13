@@ -14,7 +14,7 @@ public enum KeyboardRowEnum {
 
     ADDITIONAL_INFORMATION_ROW("Company/product spec", "write_ai"),
 
-    GREETING_ROW("Create new letter", "new"),
+    NEW_LETTER_ROW("Create new letter", "new"),
     RETURN_MENU_ROW("Return to menu", "menu"),
     SUBMIT_ROW("Submit", "submit"),
     GENERATE_ROW("Generate Message", "generate");
