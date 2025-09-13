@@ -2,7 +2,6 @@ package com.test.motivationletterbot.bot;
 
 import com.test.motivationletterbot.entity.*;
 import com.test.motivationletterbot.entity.ability.Abilities;
-import com.test.motivationletterbot.entity.ability.AbilitiesEnum;
 import com.test.motivationletterbot.entity.commands.CommandService;
 import com.test.motivationletterbot.kafka.KafkaProducer;
 
@@ -19,21 +18,19 @@ import org.telegram.telegrambots.longpolling.BotSession;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.AfterBotRegistration;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
-
-import java.io.File;
 
 import jakarta.annotation.PostConstruct;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.test.motivationletterbot.entity.keyboard.KeyboardRowEnum.GREETING_ROW;
 import static com.test.motivationletterbot.util.BotUtils.isCommand;
 
 import org.telegram.telegrambots.abilitybots.api.db.DBContext;
@@ -57,7 +54,8 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
             BareboneToggle toggle,
             ConcurrentHashMap<Long, UserSession> userSessions,
             SilentSender silent,
-            KafkaProducer kafkaProducer) {
+            KafkaProducer kafkaProducer
+    ) {
         super(
                 telegramClient,
                 botProperties.getName(),
@@ -143,37 +141,24 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         return creatorId;
     }
 
-    public void sendPdf(long chatId, AbilitiesEnum state, File pdfFile) {
-        var session = userSessions.get(chatId);
-        SendDocument sendDocument = buildSendPdf(chatId, session, state, pdfFile);
-        Message sentDocument = null;
-        try {
-            sentDocument = telegramClient.execute(sendDocument);
-        } catch (TelegramApiException e) {
-            log.error("Failed to send PDF document", e);
-        }
-        state.getSessionAction().accept(session);
-        commandService.setBotCommands(chatId, session.getBotCommands());
-        if (sentDocument != null) {
-            if (state.getInlineKeyboardSupplier().apply(session) == null) {
-                session.resetLastMessageKeyboardInfo();
-            } else {
-                int messageId = sentDocument.getMessageId();
-                session.setLastMessageKeyboardInfo(messageId);
-            }
-        }
-    }
-
-    private SendDocument buildSendPdf(long chatId, UserSession session, AbilitiesEnum state, File pdfFile) {
-        return SendDocument.builder()
+    private SendMessage buildSendMessage(long chatId, String text) {
+        return SendMessage.builder()
                 .chatId(chatId)
-                .document(new InputFile(pdfFile))
-                .replyMarkup(buildReplyMarkup(session, state))
+                .text(text)
+                .replyMarkup(InlineKeyboardMarkup.builder()
+                        .keyboard(List.of(GREETING_ROW.getRow()))
+                        .build())
                 .build();
     }
 
-    private InlineKeyboardMarkup buildReplyMarkup(UserSession session, AbilitiesEnum state) {
-        return InlineKeyboardMarkup.builder().keyboard(Optional.ofNullable(state.getInlineKeyboardSupplier()).map(supplier -> supplier.apply(session)).filter(Objects::nonNull).orElse(Collections.emptyList())).build();
+    public void sendMessage(long chatId, String messageText) {
+        SendMessage message = buildSendMessage(chatId, messageText);
+        try {
+            Message sentMessage = telegramClient.execute(message);
+            userSessions.get(chatId).setLastKeyboardMessageId(sentMessage.getMessageId());
+        } catch (TelegramApiException e) {
+            log.error("Failed to send message", e);
+        }
     }
 
     private UserSession getOrCreateUserSession(Update update) {

@@ -11,10 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 import static com.test.motivationletterbot.constants.MessageConstants.*;
 import static com.test.motivationletterbot.entity.textentry.TextEntryType.VACANCY_TEXT_ENTRY;
@@ -67,7 +64,7 @@ public class UserSession {
     }
 
     public void startSession() {
-        updateMainMenuState();
+        resetMenuState();
         entries.values().forEach(TextEntry::reset);
         addTextEntryButtons();
     }
@@ -165,7 +162,7 @@ public class UserSession {
         var keyboard = inlineKeyboards.getMenuKeyboard(entries.values());
         // add generate row only if VACANCY is complete and not already present
         if (entries.get(VACANCY_TEXT_ENTRY).isComplete()) {
-            boolean hasGenerate = keyboard.stream().flatMap(row -> row.stream())
+            boolean hasGenerate = keyboard.stream().flatMap(Collection::stream)
                     .anyMatch(button -> KeyboardRowEnum.GENERATE_ROW.getCallbackData().equals(button.getCallbackData()));
             if (!hasGenerate) {
                 keyboard.add(KeyboardRowEnum.GENERATE_ROW.getRow());
@@ -209,6 +206,11 @@ public class UserSession {
         if (isAllMandatoryComplete()) {
             menuState.add(GENERATE_COMMAND);
         }
+    }
+
+    private void resetMenuState() {
+        menuState.clear();
+        menuState.addAll(MOTIVATION_MENU_STATE.getStateCommands());
     }
 
     private void addTextEntryButtons() {
