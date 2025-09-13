@@ -59,7 +59,6 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         super(
                 telegramClient,
                 botProperties.getName(),
-                useInMemoryMapDB(),
                 toggle
         );
         addExtensions(new Abilities(userSessions, silent, telegramClient, commandService, kafkaProducer));
@@ -109,21 +108,6 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
             }
         });
 
-    }
-
-    private static DBContext useInMemoryMapDB() {
-        String useInMemory = System.getProperty("bot.use-inmemory-db",
-                System.getenv("USE_INMEMORY_MAPDB"));
-
-        String dbName;
-        if ("true".equalsIgnoreCase(useInMemory)) {
-            // Use a unique in-memory DB name for each run, stored in a temp folder
-            dbName = "./tmpdb/inmem-" + UUID.randomUUID();
-        } else {
-            dbName = "./tmpdb/MotivationLetterBot-" + System.currentTimeMillis();
-
-        }
-        return MapDBContext.offlineInstance(dbName);
     }
 
     @Override
