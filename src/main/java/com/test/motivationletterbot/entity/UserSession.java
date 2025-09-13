@@ -34,7 +34,7 @@ public class UserSession {
     private int lastKeyboardMessageId;
     private boolean lastMessageHadKeyboard = false;
 
-    private EnumSet<CommandsEnum> menuState = START_MENU_STATE.getStateCommands();
+    private EnumSet<CommandsEnum> menuState = START_MENU_BASE_STATE.getStateCommands();
 
     public UserSession() {
         for (TextEntryType type : TextEntryType.values()) {
@@ -210,7 +210,7 @@ public class UserSession {
 
     private void updateMainMenuState() {
         menuState.clear();
-        menuState.addAll(MAIN_MENU_STATE.getStateCommands());
+        menuState.addAll(START_MENU_BASE_STATE.getStateCommands());
         if (isAllMandatoryComplete()) {
             menuState.add(GENERATE_COMMAND);
         }
@@ -218,7 +218,7 @@ public class UserSession {
 
     private void resetMenuState() {
         menuState.clear();
-        menuState.addAll(START_MENU_STATE.getStateCommands());
+        menuState.addAll(START_MENU_BASE_STATE.getStateCommands());
     }
 
     private void addTextEntryButtons() {
