@@ -218,7 +218,7 @@ public class UserSession {
 
     private void resetMenuState() {
         menuState.clear();
-        menuState.addAll(MOTIVATION_MENU_STATE.getStateCommands());
+        menuState.addAll(START_MENU_STATE.getStateCommands());
     }
 
     private void addTextEntryButtons() {
