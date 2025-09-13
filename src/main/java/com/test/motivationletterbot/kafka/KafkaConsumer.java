@@ -15,11 +15,22 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import com.test.motivationletterbot.entity.UserSession;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.apache.pdfbox.pdmodel.font.PDFont;
 
 @Slf4j
 @Service
@@ -29,6 +40,9 @@ public class KafkaConsumer {
     private final KafkaTemplate<String, KafkaResponse> responseKafkaTemplate;
     private final String responseTopic;
     private final LlmClient llmClient;
+
+    // cached font bytes to avoid repeated file reads; used to create PDType0Font per document
+    private final AtomicReference<byte[]> cachedFontData = new AtomicReference<>();
 
     public KafkaConsumer(
             @Lazy MotivationLetterBot motivationLetterBot,
@@ -51,63 +65,162 @@ public class KafkaConsumer {
     @KafkaListener(topics = "${motivation-bot.kafka.response-topic}", groupId = "motivation-letter-bot")
     public void handleResponse(KafkaResponse response) throws IOException {
         File pdfFile = generatePdf(response.getGeneratedText());
-        // Fetch live in-memory session from the bot to avoid stale/serialized session state
-        UserSession liveSession = motivationLetterBot.getUserSessions().get(response.getChatId());
+
         motivationLetterBot.sendPdf(response.getChatId(), response.getState(), pdfFile);
+        // remove temp file after sending (best-effort)
+        try {
+            Files.deleteIfExists(pdfFile.toPath());
+        } catch (IOException e) {
+            log.warn("Failed to delete temp PDF {}: {}", pdfFile, e.getMessage());
+        }
     }
 
     private File generatePdf(String generatedText) throws IOException {
-        // Create new PDF document
-        PDDocument document = new PDDocument();
-        PDPage page = new PDPage(PDRectangle.A4);
-        document.addPage(page);
+        // Create a temp file per request to avoid conflicts
+        Path tmp = Files.createTempFile("motivation-letter-", ".pdf");
+        File outputFile = tmp.toFile();
 
-        PDType1Font font = new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN);
+        try (PDDocument document = new PDDocument()) {
+            PDFont font = createDocumentFont(document);
 
-        // Define output file
-        File outputFile = new File("Balkouski, Motivational Letter.pdf");
+            float margin = 50f;
+            float yStart = PDRectangle.A4.getHeight() - margin;
+            float leading = 16f;
+            int fontSize = 12;
 
-        try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-            contentStream.beginText();
-            contentStream.setFont(font, 12);
-            contentStream.setLeading(16f); // line spacing
-            contentStream.newLineAtOffset(50, 750); // start position (50 from left, 750 from bottom)
+            // Prepare wrapped lines from the text
+            List<String> lines = wrapTextToLines(generatedText, 80); // simple char-based wrap
 
-            int maxLineLength = 80; // adjust as needed
+            PDPage page = new PDPage(PDRectangle.A4);
+            document.addPage(page);
 
-            // Split text into paragraphs by line breaks
-            String[] paragraphs = generatedText.split("\\r?\\n");
-            for (String paragraph : paragraphs) {
-                String[] words = paragraph.split(" ");
-                StringBuilder line = new StringBuilder();
+            PDPageContentStream contentStream = null;
+            try {
+                contentStream = new PDPageContentStream(document, page);
+                contentStream.beginText();
+                contentStream.setFont(font, fontSize);
+                contentStream.setLeading(leading);
+                contentStream.newLineAtOffset(margin, yStart);
 
-                for (String word : words) {
-                    if (line.length() + word.length() > maxLineLength) {
-                        contentStream.showText(line.toString().trim());
-                        contentStream.newLine();
-                        line = new StringBuilder();
+                float yPosition = yStart;
+
+                for (String line : lines) {
+                    if (yPosition - leading < margin) {
+                        // finish current page
+                        contentStream.endText();
+                        contentStream.close();
+
+                        // new page
+                        page = new PDPage(PDRectangle.A4);
+                        document.addPage(page);
+                        contentStream = new PDPageContentStream(document, page);
+                        contentStream.beginText();
+                        contentStream.setFont(font, fontSize);
+                        contentStream.setLeading(leading);
+                        contentStream.newLineAtOffset(margin, yStart);
+                        yPosition = yStart;
                     }
-                    line.append(word).append(" ");
-                }
 
-                // Print last line of the paragraph
-                if (!line.isEmpty()) {
-                    contentStream.showText(line.toString().trim());
+                    // If using a Type1 fallback font, sanitize unsupported glyphs. If using PDType0Font (TTF), write raw Unicode.
+                    String safe;
+                    if (font instanceof PDType0Font) {
+                        safe = line;
+                    } else {
+                        safe = sanitizeForFont(line, font);
+                    }
+                    contentStream.showText(safe == null ? "" : safe);
                     contentStream.newLine();
+                    yPosition -= leading;
                 }
 
-                // Extra new line for paragraph spacing
-                contentStream.newLine();
+                contentStream.endText();
+            } finally {
+                if (contentStream != null) {
+                    try {
+                        contentStream.close();
+                    } catch (IOException ignored) {
+                        // ignore
+                    }
+                }
             }
 
-            contentStream.endText();
+            document.save(outputFile);
         }
 
-        // Save and close
-        document.save(outputFile);
-        document.close();
-
         return outputFile;
+    }
+
+    private List<String> wrapTextToLines(String text, int maxLineLength) {
+        List<String> result = new ArrayList<>();
+        if (text == null || text.isEmpty()) return result;
+
+        String[] paragraphs = text.split("\\r?\\n");
+        for (String paragraph : paragraphs) {
+            if (paragraph == null || paragraph.isEmpty()) {
+                result.add("");
+                continue;
+            }
+            String[] words = paragraph.split("\\s+");
+            StringBuilder line = new StringBuilder();
+            for (String word : words) {
+                if (line.length() + word.length() + 1 > maxLineLength) {
+                    result.add(line.toString().trim());
+                    line.setLength(0);
+                }
+                if (line.length() > 0) line.append(' ');
+                line.append(word);
+            }
+            if (line.length() > 0) result.add(line.toString());
+            // paragraph gap
+            result.add("");
+        }
+        return result;
+    }
+
+    // Create PDType0Font per document using DejaVuSans.ttf from resources when available.
+    // If not available, fall back to a standard Type1 font (Helvetica) which may not support Cyrillic.
+    private PDFont createDocumentFont(PDDocument document) {
+        InputStream is = getClass().getResourceAsStream("/fonts/DejaVuSans.ttf");
+        if (is != null) {
+            try (InputStream in = is) {
+                return PDType0Font.load(document, in, true);
+            } catch (IOException e) {
+                log.warn("Failed to load DejaVuSans.ttf from resources: {}", e.getMessage());
+            }
+        }
+
+        log.warn("DejaVuSans.ttf not found or failed to load; falling back to Helvetica (may not support Cyrillic)");
+        return new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+    }
+
+    // Replace characters that are not available in the chosen font. Special-case some common smart punctuation.
+    private String sanitizeForFont(String input, PDFont font) {
+        if (input == null || input.isEmpty()) return input;
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        while (i < input.length()) {
+            int cp = input.codePointAt(i);
+            String ch = new String(Character.toChars(cp));
+            try {
+                // try to encode this codepoint using the font
+                font.encode(ch);
+                sb.append(ch);
+            } catch (Exception e) {
+                // fallback mappings for known punctuation
+                if (cp == 0x2011) { // non-breaking hyphen
+                    sb.append('-');
+                } else if (cp == 0x2013 || cp == 0x2014) { // en-dash/em-dash
+                    sb.append('-');
+                } else if (cp == 0x2018 || cp == 0x2019 || cp == 0x201C || cp == 0x201D) { // smart quotes
+                    sb.append('"');
+                } else {
+                    // replace unsupported char with a simple placeholder
+                    sb.append('?');
+                }
+            }
+            i += Character.charCount(cp);
+        }
+        return sb.toString();
     }
 
 }
