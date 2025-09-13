@@ -63,11 +63,19 @@ public class UserSession {
         menuState.add(RESTART_COMMAND);
     }
 
+    public void restartSession() {
+        resetMenuState();
+        entries.values().forEach(TextEntry::reset);
+        addUncompletedTextEntryButtons();
+    }
+
     public void startSession() {
         resetMenuState();
         entries.values().forEach(TextEntry::reset);
-        addTextEntryButtons();
+        menuState.add(RESTART_COMMAND);
     }
+
+
 
     public void returnToMenu() {
         setAllEntriesOnWorkFalse();

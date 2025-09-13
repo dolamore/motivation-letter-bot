@@ -30,11 +30,8 @@ import jakarta.annotation.PostConstruct;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.test.motivationletterbot.entity.keyboard.KeyboardRowEnum.GREETING_ROW;
+import static com.test.motivationletterbot.entity.keyboard.KeyboardRowEnum.NEW_LETTER_ROW;
 import static com.test.motivationletterbot.util.BotUtils.isCommand;
-
-import org.telegram.telegrambots.abilitybots.api.db.DBContext;
-import org.telegram.telegrambots.abilitybots.api.db.MapDBContext;
 
 import com.test.motivationletterbot.entity.textentry.TextEntryType;
 
@@ -130,7 +127,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
                 .chatId(chatId)
                 .text(text)
                 .replyMarkup(InlineKeyboardMarkup.builder()
-                        .keyboard(List.of(GREETING_ROW.getRow()))
+                        .keyboard(List.of(NEW_LETTER_ROW.getRow()))
                         .build())
                 .build();
     }
