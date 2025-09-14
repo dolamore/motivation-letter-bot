@@ -66,7 +66,6 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
     @Override
     public void consume(Update update) {
         if (!checkGlobalFlags(update)) {
-            log.warn("There is nothing i can do with this update");
             return;
         }
 
@@ -120,7 +119,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         return 0;
     }
 
-    private SendMessage buildSendMessage(long chatId, String text) {
+    private SendMessage buildGenerativeSendMessage(long chatId, String text) {
         return SendMessage.builder()
                 .chatId(chatId)
                 .text(text)
@@ -130,8 +129,8 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
                 .build();
     }
 
-    public void sendMessage(long chatId, String messageText) {
-        SendMessage message = buildSendMessage(chatId, messageText);
+    public void sendGenerativeMessage(long chatId, String messageText) {
+        SendMessage message = buildGenerativeSendMessage(chatId, messageText);
         try {
             Message sentMessage = telegramClient.execute(message);
             userSessions.get(chatId).setLastKeyboardMessageId(sentMessage.getMessageId());
