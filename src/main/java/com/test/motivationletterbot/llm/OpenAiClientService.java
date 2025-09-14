@@ -30,9 +30,6 @@ public final class OpenAiClientService extends AbstractLlmClient {
     }
 
     public String sendPrompt(String userPrompt) {
-        log.warn("Sending prompt to OpenAI: {}", userPrompt);
-        log.warn("System prompt: {}", getSystemPrompt());
-
         ChatCompletionCreateParams params = ChatCompletionCreateParams.builder()
                 .model(model)
                 .addSystemMessage(getSystemPrompt())

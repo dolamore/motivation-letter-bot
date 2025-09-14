@@ -4,33 +4,14 @@ import com.test.motivationletterbot.bot.MotivationLetterBot;
 import com.test.motivationletterbot.llm.LlmClient;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
-import com.test.motivationletterbot.entity.UserSession;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.pdfbox.pdmodel.font.PDFont;
 
 @Slf4j
 @Service
@@ -65,6 +46,6 @@ public class KafkaConsumer {
     @KafkaListener(topics = "${motivation-bot.kafka.response-topic}", groupId = "motivation-letter-bot")
     public void handleResponse(KafkaResponse response) {
 
-        motivationLetterBot.sendMessage(response.getChatId(), response.getGeneratedText());
+        motivationLetterBot.sendGenerativeMessage(response.getChatId(), response.getGeneratedText());
     }
 }
