@@ -32,11 +32,6 @@ public class BotConfig {
         executor.setQueueCapacity(100);
         executor.setThreadNamePrefix("BotExecutor-");
         executor.setRejectedExecutionHandler((r, e) -> {
-            // Custom logging for rejected tasks
-            if (r != null) {
-                log.error("[REJECTED TASK] Runnable class: {}", r.getClass().getName());
-            }
-            log.error("[REJECTED TASK] Executor state: {}", e.toString());
             // Use CallerRunsPolicy as fallback
             new ThreadPoolExecutor.CallerRunsPolicy().rejectedExecution(r, e);
         });
