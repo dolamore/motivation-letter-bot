@@ -1,10 +1,13 @@
 package com.test.motivationletterbot.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.List;
 
+@Slf4j
 public final class EnvFileLoader {
     private EnvFileLoader() {
     }
@@ -28,10 +31,6 @@ public final class EnvFileLoader {
                 }
                 // set as system property so Spring Environment can see it
                 System.setProperty(key, value);
-                // also map common env->spring property for convenience
-                if ("OPENAI_API_KEY".equals(key)) {
-                    System.setProperty("openai.api.key", value);
-                }
             }
         } catch (IOException e) {
             System.err.println("Failed to load .env: " + e.getMessage());
