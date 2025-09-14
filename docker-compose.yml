@@ -1,16 +1,52 @@
 services:
-  postgres:
-    image: 'postgres:14-alpine'
-    container_name: postgres
+
+  app:
+    build: .
+    container_name: motivation-letter-bot
     ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
+      - "8080:8080"
+    depends_on:
+      - kafka
     volumes:
-      - motivation-letter-bot_postgres_data:/var/lib/postgresql/data
-      - ./imports/postgres-init.sql:/docker-entrypoint-initdb.d/postgres-init.sql
+      - .:/app
+      - ~/.m2:/root/.m2
+    command: sh -c "mvn spring-boot:run"
+    restart: always
+    environment:
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      BOT_TOKEN: "${BOT_TOKEN}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY}"
+
+  zookeeper:
+    image: 'confluentinc/cp-zookeeper:7.5.0'
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: 'confluentinc/cp-kafka:7.5.0'
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=WARN,kafka.coordinator.group=WARN,state.change.logger=WARN,kafka.cluster.Partition=WARN,kafka.log.LogManager=WARN,kafka.log.UnifiedLog$=WARN,kafka.server.ReplicaFetcherManager=WARN,kafka.zk.AdminZkClient=WARN"
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CREATE_TOPICS: "motivation-bot-requests:1:1,motivation-bot-responses:1:1"
 
 volumes:
-  motivation-letter-bot_postgres_data:
+  kafka-data:

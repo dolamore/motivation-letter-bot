@@ -1,0 +1,107 @@
+Instruction for generating the motivational letter:
+
+    Use only the experiences and skills that are real and described in the "Information about me"
+    section and are most relevant to the role described in the vacancy description.
+
+    For explaining my motivation use the “My motivation” section.
+    For information about the company and product use “Company/product info” section.
+    For information about vacancy use “Vacancy description” section.
+
+    The body part of a letter should consist of three logical parts:
+
+    → Summary;
+    → Target description of experience;
+    → Motivation.
+
+    1. Summary. The summary is a short description of your professional experience on 5-7 lines. The summary chronology:
+     the total number of years in the field, the logic of career growth, your three main hard competencies.
+     Just as important as in a résumé, examples of real companies/clients and numbers. Take the information for this
+     summary in the “Information about me” section (there is an overall summary, but also something relevant could be
+     in the work experience part, consider using it all)
+
+    Example #1
+    10+ years of experience in marketing in large international and Russian companies (automotive industry, real estate).
+     He began his career in the representative offices of German automobile concerns BMW and Porsche
+     as a product marketing manager, then headed the Digital departments at Kia and Sminex.
+     Key competencies — launching new products/brands to the market and localizing them, launching loyalty programs
+     and building omnichannel systems from scratch.
+     Experience in managing a team of up to 20 people and an annual budget of up to $1 million.
+
+    Example #2
+    I have been working in medicine for 15 years, 8 of which were in management positions at various levels,
+    from managing a small branch of a dental clinic to managing a large business unit that unites 6 branches in 4 cities in Russia.
+    I have experience in managing a team of up to 10 people under direct subordination and a budget of up to 100 million rubles.
+
+    2. Target description of experience. To write this part, you need to:
+    → carefully read the requirements in the position description
+    → select 3-4 most important points from there
+    → describe your experience in such a way that it shows how you used your competencies specified in the requirements.
+    You could find relevant information in the “Vacancy description” section and “Information about me” section
+
+    Example #1
+    Requirement: experience in project management in the IT field for at least 3 years.
+    In the cover letter: write short descriptions of the projects you have completed, launched, and developed.
+
+    Example #2
+    Requirement: ability to set up and analyze experiments.
+    In the cover letter: describe what experiments you have done (A/B, A/A, A/B/C, etc.),
+    what metrics you have analyzed, what criteria you have applied, what tools you have used for analysis.
+
+    3. Motivation. Applicants often skimp on the motivation section, but in vain.
+    Motivation is an indicator of the candidate’s intelligence and interest.
+    Good motivation is usually based on one of the following points:
+
+    → The company’s product. For example, you like the company’s product, you use it yourself,
+    it brings you value, and you sincerely want to make this product with the company.
+
+    → Industries. For example, you have worked on the consulting or agency side,
+    have extensive knowledge of the market/successful cases,
+    and are ready to apply the accumulated experience on the client side.
+
+    → Career challenge. For example, the position you are applying for is your next career step.
+    You have never held this position before, but you know you are ready and able, and this is your career challenge.
+
+“Vacancy description”: "{{vacancy_description}}"
+
+“Company/product info”: "{{additional_information}}"
+
+“My motivation”: "{{user_motivation}}"
+
+“Information about me”: "
+    MY CAREER SUMMARY:
+    Full-stack engineer with 4+ years of experience in Java and TypeScript. Developed backend systems, including the design and integration of API endpoints, that reduced manual operations by over 70% and powered real-time dashboards. Delivered features end-to-end, utilizing layered architecture, modular design, event-driven workflows, and CI/CD pipelines. Worked closely with stakeholders to align solutions with business needs and took full ownership of backend design in both self-initiated and commercial projects. Applied test-driven development with unit, integration, and E2E tests to ensure system reliability. Focused on long-term maintainability through clear documentation and regular refactoring. Backed by a strong academic foundation, with a degree from TU Munich.
+    SKILLS I HAVE:
+    Programming Languages: Java, JavaScript, TypeScript, Python, R, SQL;
+    Backend: Spring, Lombok, Hibernate, Redis; NestJS, Node.js, Prisma;
+    Frontend: React, MobX, Tailwind CSS, HTML, CSS, JavaFX, Bootstrap;
+    Database: PostgreSQL, MySQL, MongoDB;
+    Testing: JUnit, Jest, Playwright, Selenium, Postman, Mockito;
+    API & Messaging: Kafka, GraphQL, Swagger;
+    DevOps: GitHub Actions, Docker, Kubernetes, Jenkins;
+    Security: OAuth, JWT, Spring Security;
+    OS & CLI: Linux, Bash, Git;
+    DevTools: Babel, Webpack, Vite, ESLint, Prettier, Electron;
+    AI Tools: Cursor, GitHub Copilot, Ollama
+    Project Management: Jira, Confluence, Trello, YouTrack, Asana;
+
+    MY WORK EXPERIENCE:
+    Full Stack Developer (TypeScript, Node.js) for almost a year
+
+    As a personal project, built a web-based application for drummers. Developed a modular audio engine with precise timing and real-time processing optimizations. Designed and implemented a modular layered backend architecture. Applied the MVVM pattern for reactive UI architecture. Covered the full development cycle from system design to CI/CD, testing, and Dockerized deployment.
+    Stack:
+    Core: TypeScript, Node.js, Tone.js; Frontend: React, MobX, Bootstrap; Backend: NestJS, Prisma, Swagger; Database: PostgreSQL, MongoDB, Liquibase; Build & Bundling: Webpack, Vite, Electron, Babel; DevOps & CI/CD: Docker, GitHub Actions; Testing & QA: Jest, Playwright, Postman; Logging & Monitoring: Winston; DevTools: ESLint, Prettier
+
+    Backend Developer (Java, Spring) for two years
+    Independently built the backend using modular, layered architecture with automated CI/CD pipelines. Automated procurement workflows by integrating Google Forms with Bitrix ERP using REST APIs and webhooks, which reduced manual processing time by 70%. Built pricing dashboards that aggregate data from multiple vendor APIs using a custom gateway service, cutting quote errors by 90%. Used a caching proxy layer for ERP data and implemented a monitoring facade that triggered alerts for failed syncs, resulting in 80% fewer outages.
+    Stack:
+    Java, Spring Boot/Integration/Cloud/Data, Redis, Hibernate, Lombok, GitHub Actions, PostgreSQL, Docker, JUnit, Mockito, Postman
+
+    Backend Developer (Java, Spring) for a year
+    Developed a service bot to cover the full art sales workflow, including orders, payments, and delivery. Automated all background tasks, with only package drop-off remaining manual. Migrated sales from in-person to e-commerce, reducing manual effort by 70% and processing time by 30%. Maintained the product post-launch by implementing new features, fixing bugs, and improving system reliability. Ensured reliability with comprehensive test coverage, including unit, integration, and E2E tests.
+    Stack:
+    Java, Spring Boot/Data JPA/Scheduling, Telegram Bot API, JUnit, Mockito, MySQL, Hibernate, Maven, Docker, Jenkins
+    Data Analyst for half a year
+    Cleaned and transformed market data using dplyr, performed exploratory analysis with ggplot2, and built predictive models using tidymodels in RStudio. Developed performant MySQL structures to support fast, reliable queries. Implemented data analytics solutions that optimized decision-making workflow.
+    Stack:
+    R, dplyr (tidyverse), tidymodels, ggplot2, RStudio, MySQL
+    "

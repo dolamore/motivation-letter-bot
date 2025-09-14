@@ -1,23 +1,53 @@
 spring:
+  main:
+    banner-mode: "off"
+  devtools:
+    restart:
+      enabled: true
+      poll-interval: 1s
+      quiet-period: 400ms
+    livereload:
+      enabled: false
+  config:
+    import: "optional:dotenv:.env"
+
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9093}
+    consumer:
+      group-id: motivation-letter-bot
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: '*'
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
   application:
     name: MotivationLetterBot
-  datasource:
-    url: ${JDBC_DATABASE_URL:jdbc:postgresql://localhost:5432/postgres}
-    username: ${POSTGRES_USER:postgres}
-    password: ${POSTGRES_PASSWORD:postgres}
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 2
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    open-in-view: false
-    properties:
-      hibernate.default_schema: ${POSTGRES_SCHEMA:motivation_letter_bot_schema}
-  liquibase:
-    default-schema: ${POSTGRES_SCHEMA:motivation_letter_bot_schema}
-    change-log: classpath:db/changelog/master.yml
+
+logging:
+  level:
+    org.telegram.telegrambots: ERROR
+    org.telegram.telegrambots.longpolling.BotSession: OFF
+    org.springframework.boot.devtools: WARN
+    root: WARN
+  pattern:
+    console: "%msg%n"
 
 bot:
   name: "MotivationLetterBot"
-  token: ${BOT_TOKEN:8068325542:AAEanbwFmZ_uLykXOgTf1D9CrLlyNQ52FfI}
+  token: ${BOT_TOKEN}
+
+motivation-bot:
+  kafka:
+    request-topic: motivation-bot-requests
+    response-topic: motivation-bot-responses
+
+llm:
+  system-prompt-path: classpath:system-prompt.txt
+
+openai:
+  api:
+    key: ${OPENAI_API_KEY:}

@@ -1,12 +1,13 @@
 package com.test.motivationletterbot;
 
+import com.test.motivationletterbot.util.EnvFileLoader;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MotivationLetterBotApplication {
-
+public class Application {
     public static void main(String[] args) {
-        SpringApplication.run(MotivationLetterBotApplication.class, args);
+        EnvFileLoader.load();
+        SpringApplication.run(Application.class, args);
     }
 }
