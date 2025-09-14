@@ -40,7 +40,6 @@ import com.test.motivationletterbot.entity.textentry.TextEntryType;
 @Getter
 public class MotivationLetterBot extends AbilityBot implements SpringLongPollingBot {
     private final BotProperties botProperties;
-    private final long creatorId;
     private final ConcurrentHashMap<Long, UserSession> userSessions;
     private final CommandService commandService;
 
@@ -60,7 +59,6 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
         );
         addExtensions(new Abilities(userSessions, silent, telegramClient, commandService, kafkaProducer));
         this.botProperties = botProperties;
-        this.creatorId = botProperties.getBotCreatorId();
         this.userSessions = userSessions;
         this.commandService = commandService;
     }
@@ -119,7 +117,7 @@ public class MotivationLetterBot extends AbilityBot implements SpringLongPolling
 
     @Override
     public long creatorId() {
-        return creatorId;
+        return 0;
     }
 
     private SendMessage buildSendMessage(long chatId, String text) {
