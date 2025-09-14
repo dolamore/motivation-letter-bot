@@ -14,8 +14,9 @@ services:
     restart: always
     environment:
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
-      USE_INMEMORY_MAPDB: "true"
       KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      BOT_TOKEN: "${BOT_TOKEN}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY}"
 
   zookeeper:
     image: 'confluentinc/cp-zookeeper:7.5.0'
